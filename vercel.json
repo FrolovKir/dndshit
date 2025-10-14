@@ -1,7 +1,5 @@
 {
-  "env": {
-    "DATABASE_URL": "file:./prisma/prod.db"
-  }
+  "buildCommand": "npm run db:migrate:deploy && npx prisma db seed && next build"
 }
 
 
