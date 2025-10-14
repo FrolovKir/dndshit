@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
 
     // Получаем статистику использования
     const stats = await getUsageStats(userId, 30);
+    // Убираем возможный дублирующийся ключ totalRequests из spread
+    const { totalRequests: _ignoredTotalRequests, ...restStats } = (stats || {}) as any;
 
     return NextResponse.json({
       user: {
@@ -40,9 +42,8 @@ export async function GET(request: NextRequest) {
       budget: user.creditBudget,
       stats: {
         totalProjects: user._count.projects,
-        // totalRequests отчитываем из user._count, а в stats оставим другие поля
         totalRequests: user._count.requestLogs,
-        ...(stats ? Object.fromEntries(Object.entries(stats).filter(([k]) => k !== 'totalRequests')) : {}),
+        ...restStats,
       },
     });
   } catch (error: any) {
