@@ -6,21 +6,21 @@ import Input from './Input';
 import Select from './Select';
 import Textarea from './Textarea';
 
-interface Encounter {
+interface EncounterData {
   id: string;
   title: string;
-  description: string;
-  encounterType: string;
-  difficulty: string;
+  description?: string;
+  encounterType?: string;
+  difficulty?: string;
   monsters?: string;
   environment?: string;
   tactics?: string;
   rewards?: string;
-  estimatedLevel: number;
+  estimatedLevel?: number;
 }
 
 interface EditEncounterFormProps {
-  encounter: Encounter;
+  encounter: EncounterData;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
