@@ -16,6 +16,7 @@ pnpm-debug.log*
 
 # Prisma / SQLite
 prisma/dev.db
+prisma/prod.db
 prisma/*.db
 prisma/*.db-journal
 
@@ -58,5 +59,6 @@ next-env.d.ts
 
 # prisma
 prisma/dev.db
+prisma/prod.db
 prisma/dev.db-journal
 
