@@ -6,9 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("main_db_DATABASE_URL")
-  directUrl = env("main_db_DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("main_db_DATABASE_URL")
 }
 
 // Пользователь
