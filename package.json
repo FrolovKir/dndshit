@@ -13,7 +13,7 @@
     "db:migrate:dev": "prisma migrate dev --name init",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:sync:remote": "cross-env REMOTE_DATABASE_URL=$REMOTE_DATABASE_URL tsx scripts/sync-db.ts",
+    "db:sync:remote": "tsx scripts/sync-db.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
