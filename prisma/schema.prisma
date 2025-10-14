@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Пользователь
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String   // Хэш пароля
+  email     String?  @unique
+  name      String   @default("Мастер")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects     Project[]
+  creditBudget CreditBudget?
+  requestLogs  RequestLog[]
+}
+
+// Проект/Кампания
+model Project {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  synopsis    String?  // Синопсис кампании
+  setting     String?  // Сеттинг (забытые королевства, эберрон и т.д.)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scenes     Scene[]
+  npcs       NPC[]
+  encounters Encounter[]
+}
+
+// Сцена/StoryBeat
+model Scene {
+  id          String   @id @default(uuid())
+  projectId   String
+  title       String
+  description String   // Полное описание сцены
+  sceneType   String   @default("story") // story, combat, social, exploration
+  order       Int      @default(0) // Порядок в кампании
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// NPC
+model NPC {
+  id          String   @id @default(uuid())
+  projectId   String
+  name        String
+  race        String?
+  class       String?
+  level       Int?
+  alignment   String?
+  personality String?  // Черты личности
+  backstory   String?  // Предыстория
+  appearance  String?  // Внешность
+  motivations String?  // Мотивации
+  stats       String?  // JSON со статами (STR, DEX, CON, INT, WIS, CHA)
+  imageUrl    String?  // URL сгенерированного портрета
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// Энкаунтер (боевой или социальный)
+model Encounter {
+  id             String   @id @default(uuid())
+  projectId      String
+  title          String
+  description    String
+  encounterType  String   @default("combat") // combat, social, trap, puzzle
+  difficulty     String?  // easy, medium, hard, deadly
+  monsters       String?  // JSON с монстрами из SRD
+  environment    String?  // Описание окружения
+  tactics        String?  // Тактика врагов
+  rewards        String?  // Награды
+  estimatedLevel Int?     // Рекомендуемый уровень группы
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// Бюджет токенов
+model CreditBudget {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  tier            String   @default("lite") // lite, pro, studio
+  totalTokens     Int      @default(50000) // Общий лимит токенов
+  usedTokens      Int      @default(0) // Использовано токенов
+  resetAt         DateTime // Дата сброса (обычно начало месяца)
+  stripeCustomerId String? // Для будущей интеграции с платежами
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Лог запросов к LLM
+model RequestLog {
+  id               String   @id @default(uuid())
+  userId           String
+  requestType      String   // session, scene, npc, encounter
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  model            String   @default("gpt-4o-mini")
+  success          Boolean  @default(true)
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
