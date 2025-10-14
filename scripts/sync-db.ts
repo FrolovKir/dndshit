@@ -10,11 +10,12 @@ function getEnv(name: string, optional = false): string {
 }
 
 // Источники: локальная БД (LOCAL_DATABASE_URL) и удалённая (REMOTE_DATABASE_URL)
-const LOCAL_DATABASE_URL = process.env.LOCAL_DATABASE_URL || process.env.DATABASE_URL || '';
+// Переезд: основная переменная теперь main_db_DATABASE_URL
+const LOCAL_DATABASE_URL = process.env.LOCAL_DATABASE_URL || (process.env as any).main_db_DATABASE_URL || '';
 const REMOTE_DATABASE_URL = process.env.REMOTE_DATABASE_URL || '';
 
 if (!LOCAL_DATABASE_URL) {
-  throw new Error('Set LOCAL_DATABASE_URL or DATABASE_URL for source DB');
+  throw new Error('Set LOCAL_DATABASE_URL or main_db_DATABASE_URL for source DB');
 }
 if (!REMOTE_DATABASE_URL) {
   throw new Error('Set REMOTE_DATABASE_URL for destination DB');
@@ -34,7 +35,7 @@ async function runMigrateDeploy() {
     console.log('› Applying migrations to remote DB (prisma migrate deploy)...');
     execSync('npx prisma migrate deploy', {
       stdio: 'inherit',
-      env: { ...process.env, DATABASE_URL: REMOTE_DATABASE_URL },
+      env: { ...process.env, main_db_DATABASE_URL: REMOTE_DATABASE_URL },
     });
   } catch (e) {
     console.warn('! prisma migrate deploy failed (continuing). Ensure remote schema is compatible.');

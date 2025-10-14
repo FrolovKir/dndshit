@@ -5,9 +5,9 @@ import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// Dev fallback: локально, если DATABASE_URL не задан, используем локальный PostgreSQL
-if (process.env.NODE_ENV !== 'production' && !process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/dndgenlab?schema=public';
+// Dev fallback: локально, если main_db_DATABASE_URL не задан, используем локальный PostgreSQL
+if (process.env.NODE_ENV !== 'production' && !process.env.main_db_DATABASE_URL) {
+  (process.env as any).main_db_DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/dndgenlab?schema=public';
 }
 
 export const prisma =

@@ -18,7 +18,7 @@ npm install
 ```bash
 # PostgreSQL (локально)
 # 1) Создайте БД dndgenlab в Postgres
-# 2) Установите переменную окружения DATABASE_URL, например:
+# 2) Установите переменную окружения main_db_DATABASE_URL, например:
 #    postgresql://postgres:password@localhost:5432/dndgenlab?schema=public
 # 3) Выполните миграции и сиды:
 npm run db:generate
@@ -195,10 +195,10 @@ datasource db {
 }
 ```
 
-И обновите `DATABASE_URL` в `.env`:
+И обновите `main_db_DATABASE_URL` в `.env`:
 
 ```
-DATABASE_URL="postgresql://user:password@host:5432/dbname"
+main_db_DATABASE_URL="postgresql://user:password@host:5432/dbname"
 ```
 
 ### 3. Платежная система
