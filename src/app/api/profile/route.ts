@@ -40,8 +40,9 @@ export async function GET(request: NextRequest) {
       budget: user.creditBudget,
       stats: {
         totalProjects: user._count.projects,
+        // totalRequests отчитываем из user._count, а в stats оставим другие поля
         totalRequests: user._count.requestLogs,
-        ...stats,
+        ...(stats ? Object.fromEntries(Object.entries(stats).filter(([k]) => k !== 'totalRequests')) : {}),
       },
     });
   } catch (error: any) {
