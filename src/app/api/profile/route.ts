@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { getUsageStats } from '@/lib/credits';
 import { getUserIdFromRequest } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * Получить профиль пользователя с информацией о токенах
  */

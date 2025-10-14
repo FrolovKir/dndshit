@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
@@ -18,7 +18,7 @@ interface Project {
   encounters: any[];
 }
 
-export default function ExportPage() {
+function ExportPageInner() {
   const searchParams = useSearchParams();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -240,6 +240,14 @@ export default function ExportPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function ExportPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-12 text-gray-400">Загрузка...</div>}>
+      <ExportPageInner />
+    </Suspense>
   );
 }
 
