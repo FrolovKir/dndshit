@@ -127,7 +127,7 @@ vercel deploy --prod
 ```
 
 Настройте env variables:
-- `main_db_DATABASE_URL` — PostgreSQL URL
+- `DATABASE_URL` — PostgreSQL URL
 - `OPENAI_API_KEY` — OpenAI API ключ
 - `NODE_ENV=production`
 

@@ -276,7 +276,7 @@ Download file
 ```prisma
 datasource db {
   provider = "postgresql"
-  url      = env("main_db_DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 ```
 
@@ -321,7 +321,7 @@ vercel deploy --prod
 ```
 
 **Env Variables:**
-- `main_db_DATABASE_URL`
+- `DATABASE_URL`
 - `OPENAI_API_KEY`
 - `DEMO_USER_ID`
 - `NODE_ENV=production`
