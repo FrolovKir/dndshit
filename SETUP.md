@@ -16,13 +16,13 @@ npm install
 ### 2. Настройте базу данных
 
 ```bash
-# Создайте Prisma Client
+# PostgreSQL (локально)
+# 1) Создайте БД dndgenlab в Postgres
+# 2) Установите переменную окружения DATABASE_URL, например:
+#    postgresql://postgres:password@localhost:5432/dndgenlab?schema=public
+# 3) Выполните миграции и сиды:
 npm run db:generate
-
-# Примените схему к базе данных
-npm run db:push
-
-# Заполните базу тестовыми данными
+npm run db:migrate:dev
 npm run db:seed
 ```
 

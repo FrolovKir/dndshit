@@ -5,9 +5,9 @@ import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-// Fallback for environments where DATABASE_URL is not set (e.g., Vercel without env configured)
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'file:./prisma/dev.db';
+// Dev fallback: локально, если DATABASE_URL не задан, используем локальный PostgreSQL
+if (process.env.NODE_ENV !== 'production' && !process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5432/dndgenlab?schema=public';
 }
 
 export const prisma =
