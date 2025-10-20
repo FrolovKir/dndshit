@@ -62,8 +62,11 @@ export async function POST(request: NextRequest) {
       project: { title: scene.project.title },
     }, null, 2);
 
+    // Извлекаем диапазон уровней из проекта
+    const levelRange = projectDetails.levelRange || projectDetails.level || '1-5';
+
     // Создаем промпт V2
-    const userPrompt = SCENE_NPCS_V2_PROMPT({ sceneJson });
+    const userPrompt = SCENE_NPCS_V2_PROMPT({ sceneJson, levelRange });
 
     const estimatedInputTokens = estimateTokens(SYSTEM_PROMPT + userPrompt);
 
@@ -124,15 +127,18 @@ export async function POST(request: NextRequest) {
             data: {
               projectId: scene.projectId,
               name: npcData.name || 'Безымянный NPC',
-              personality: `Первое впечатление: ${npcData.first_impression || '-'}\nРоль в сцене: ${npcData.role_in_scene || '-'}\nМотивация: ${npcData.motivation || '-'}\nСкрытый интерес: ${npcData.hidden_agenda || '-'}\n\nВарианты взаимодействия:\n- Если бой: ${npcData.interaction_options?.if_players_fight || '-'}\n- Если переговоры: ${npcData.interaction_options?.if_players_negotiate || '-'}\n- Если проигнорирован: ${npcData.interaction_options?.if_players_ignore || '-'}`,
-              motivations: npcData.motivation || undefined,
-              appearance: undefined,
-              backstory: undefined,
-              race: undefined,
-              class: undefined,
-              level: undefined,
-              alignment: undefined,
-              stats: null,
+              race: npcData.race || undefined,
+              class: npcData.class || undefined,
+              level: npcData.level || undefined,
+              alignment: npcData.alignment || undefined,
+              personality: npcData.personality || undefined,
+              backstory: npcData.backstory || undefined,
+              appearance: npcData.appearance || undefined,
+              motivations: npcData.motivations || undefined,
+              stats: npcData.stats ? JSON.stringify(npcData.stats) : undefined,
+              roleInScene: npcData.role_in_scene || undefined,
+              hiddenAgenda: npcData.hidden_agenda || undefined,
+              interactionOptions: npcData.interaction_options ? JSON.stringify(npcData.interaction_options) : undefined,
             },
           });
           

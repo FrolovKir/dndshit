@@ -39,6 +39,9 @@ interface NPC {
   motivations?: string;
   stats?: string;
   imageUrl?: string;
+  roleInScene?: string;
+  hiddenAgenda?: string;
+  interactionOptions?: string;
 }
 
 interface Encounter {
@@ -149,13 +152,29 @@ function NPCCard({ npc, onEdit, onDelete }: { npc: NPC; onEdit: () => void; onDe
       {/* Внешность (краткая) */}
       {npc.appearance && (
         <div className="mt-3 text-sm">
-          <span className="text-gray-500 font-medium">Внешность:</span>
+          <span className="text-gray-500 font-medium">👤 Внешность:</span>
           <p className="text-gray-300 mt-1 line-clamp-2">{npc.appearance}</p>
         </div>
       )}
 
+      {/* Роль в сцене */}
+      {npc.roleInScene && (
+        <div className="mt-3 text-sm">
+          <span className="text-gray-500 font-medium">🎭 Роль в сцене:</span>
+          <p className="text-gray-300 mt-1">{npc.roleInScene}</p>
+        </div>
+      )}
+
+      {/* Скрытый интерес */}
+      {npc.hiddenAgenda && (
+        <div className="mt-3 text-sm">
+          <span className="text-gray-500 font-medium">🔒 Скрытый интерес:</span>
+          <p className="text-gray-300 mt-1 italic">{npc.hiddenAgenda}</p>
+        </div>
+      )}
+
       {/* Кнопка раскрытия */}
-      {(npc.personality || npc.backstory || npc.motivations) && (
+      {(npc.personality || npc.backstory || npc.motivations || npc.interactionOptions) && (
         <button
           onClick={() => setExpanded(!expanded)}
           className="w-full mt-3 pt-3 border-t border-gray-800 text-sm text-primary hover:text-primary-light transition-colors flex items-center justify-center gap-2"
@@ -187,6 +206,39 @@ function NPCCard({ npc, onEdit, onDelete }: { npc: NPC; onEdit: () => void; onDe
               <p className="text-gray-300 whitespace-pre-wrap">{npc.motivations}</p>
             </div>
           )}
+
+          {npc.interactionOptions && (() => {
+            try {
+              const options = JSON.parse(npc.interactionOptions);
+              return (
+                <div className="text-sm">
+                  <div className="text-gray-500 font-medium mb-2">⚔️ Варианты взаимодействия:</div>
+                  <div className="space-y-2 pl-3">
+                    {options.if_players_fight && (
+                      <div>
+                        <span className="text-red-400 font-medium">• Если бой:</span>
+                        <p className="text-gray-300 ml-4">{options.if_players_fight}</p>
+                      </div>
+                    )}
+                    {options.if_players_negotiate && (
+                      <div>
+                        <span className="text-green-400 font-medium">• Если переговоры:</span>
+                        <p className="text-gray-300 ml-4">{options.if_players_negotiate}</p>
+                      </div>
+                    )}
+                    {options.if_players_ignore && (
+                      <div>
+                        <span className="text-gray-400 font-medium">• Если игнорирование:</span>
+                        <p className="text-gray-300 ml-4">{options.if_players_ignore}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            } catch (e) {
+              return null;
+            }
+          })()}
         </div>
       )}
     </Card>

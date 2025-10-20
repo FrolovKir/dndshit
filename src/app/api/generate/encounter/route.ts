@@ -34,6 +34,26 @@ export async function POST(request: NextRequest) {
       projectDetails = {};
     }
 
+    // Получаем уже существующие энкаунтеры в проекте
+    const existingEncounters = await prisma.encounter.findMany({
+      where: { projectId },
+      select: { title: true, monsters: true },
+    });
+
+    // Формируем список монстров из существующих энкаунтеров
+    const existingEncountersList = existingEncounters.map((enc) => {
+      let monstersText = '';
+      try {
+        const monsters = JSON.parse(enc.monsters || '[]');
+        if (monsters.length > 0) {
+          monstersText = ` (монстры: ${monsters.map((m: any) => `${m.count}× ${m.name}`).join(', ')})`;
+        }
+      } catch (e) {
+        // ignore
+      }
+      return `${enc.title}${monstersText}`;
+    });
+
     // Формируем расширенный контекст с информацией о кампании
     const enrichedContext = `
 КОНТЕКСТ КАМПАНИИ:
@@ -57,6 +77,7 @@ ${context || 'Создайте интересный боевой энкаунт�
       level: level || parseInt(projectDetails.recommendedLevel?.split('-')[0] || '3'),
       environment,
       context: enrichedContext,
+      existingEncounters: existingEncountersList,
     });
     const estimatedInputTokens = estimateTokens(SYSTEM_PROMPT + userPrompt);
 
