@@ -53,6 +53,10 @@ export default function Navigation() {
 
   const links = [
     { href: '/', label: 'Дашборд' },
+    { href: '/balance', label: '⚖️ Балансировщик' },
+    { href: '/tables', label: '🎲 Таблицы' },
+    { href: '/improvisation', label: '⚡ Импровизация' },
+    { href: '/visualize', label: '🎨 Визуализация' },
     { href: '/profile', label: 'Профиль' },
     { href: '/pricing', label: 'Тарифы' },
     { href: '/export', label: 'Экспорт' },

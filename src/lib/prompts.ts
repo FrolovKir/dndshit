@@ -468,3 +468,557 @@ ${params.existingEncounters.map((e, i) => `${i + 1}. ${e}`).join('\n')}
   "xpTotal": общий опыт за бой
 }`;
 
+// ===== ПАНЕЛЬ БЫСТРОЙ ГЕНЕРАЦИИ (Импровизация) =====
+
+/**
+ * Быстрая генерация имён (одна кнопка)
+ */
+export const QUICK_NAME_PROMPT = (params: {
+  type: 'person' | 'place' | 'tavern' | 'organization' | 'item';
+  race?: string;
+  culture?: string;
+  style?: 'common' | 'exotic' | 'dark' | 'noble';
+}) => `Сгенерируй ${params.type === 'person' ? 'ИМЯ ПЕРСОНАЖА' : params.type === 'place' ? 'НАЗВАНИЕ МЕСТА' : params.type === 'tavern' ? 'НАЗВАНИЕ ТАВЕРНЫ/ГОСТИНИЦЫ' : params.type === 'organization' ? 'НАЗВАНИЕ ОРГАНИЗАЦИИ' : 'НАЗВАНИЕ ПРЕДМЕТА'} для D&D 5e.
+
+${params.race ? `Раса: ${params.race}` : ''}
+${params.culture ? `Культура: ${params.culture}` : ''}
+${params.style ? `Стиль: ${params.style}` : ''}
+
+Верни ТОЛЬКО JSON:
+{
+  "name": "${params.type === 'person' ? 'Имя Фамилия или Имя Прозвище' : 'Название'}",
+  ${params.type === 'person' ? '"nickname": "прозвище (опционально)",' : ''}
+  "flavor": "короткое пояснение (1 предложение) - почему такое имя, что оно значит, откуда взялось"
+}`;
+
+/**
+ * Быстрый генератор "мелкого" NPC (за 3 секунды)
+ */
+export const QUICK_NPC_PROMPT = (params: {
+  role: string;
+  mood?: 'friendly' | 'suspicious' | 'hostile' | 'indifferent' | 'comedic' | 'mysterious';
+  race?: string;
+}) => `Создай БЫСТРЫЙ NPC для D&D 5e — второстепенный персонаж для импровизации.
+
+Роль: ${params.role}
+${params.race ? `Раса: ${params.race}` : 'Раса: любая подходящая'}
+${params.mood ? `Настроение: ${params.mood}` : ''}
+
+Создай КРАТКОГО персонажа — только самое важное для ролевой игры. БЕЗ полных характеристик, только ролевая оболочка.
+
+Верни ТОЛЬКО JSON:
+{
+  "name": "Имя",
+  "race": "Раса",
+  "appearance": "Внешность в 1-2 предложениях (яркая запоминающаяся деталь)",
+  "personality": "Характер в 1 предложении",
+  "quirk": "Странная привычка или манера речи",
+  "catchphrase": "Фраза, которую может сказать (опционально)",
+  "secret": "Небольшой секрет или скрытая деталь (опционально)"
+}`;
+
+/**
+ * Генератор случайных событий
+ */
+export const QUICK_EVENT_PROMPT = (params: {
+  location: 'city' | 'wilderness' | 'dungeon' | 'tavern' | 'road';
+  tone?: 'neutral' | 'dangerous' | 'comedic' | 'mysterious' | 'dramatic';
+}) => `Создай СЛУЧАЙНОЕ СОБЫТИЕ для D&D 5e.
+
+Локация: ${params.location}
+${params.tone ? `Тон: ${params.tone}` : ''}
+
+Событие должно быть интересным, но не обязательно критичным для сюжета — что-то, что оживит мир и даст игрокам выбор действий.
+
+Верни ТОЛЬКО JSON:
+{
+  "title": "Короткое название события",
+  "description": "Что происходит (2-3 предложения)",
+  "possibleActions": ["что игроки могут сделать - вариант 1", "вариант 2", "вариант 3"],
+  "consequences": {
+    "if_help": "Что будет, если помогут",
+    "if_ignore": "Что будет, если проигнорируют"
+  }
+}`;
+
+/**
+ * Генератор находок и предметов
+ */
+export const QUICK_LOOT_PROMPT = (params: {
+  source: 'pocket' | 'chest' | 'corpse' | 'ruins' | 'treasure';
+  value?: 'worthless' | 'common' | 'valuable' | 'magical';
+  partyLevel?: number;
+}) => `Создай СЛУЧАЙНУЮ НАХОДКУ для D&D 5e.
+
+Источник: ${params.source}
+${params.value ? `Ценность: ${params.value}` : ''}
+${params.partyLevel ? `Уровень партии: ${params.partyLevel}` : ''}
+
+Создай 1-3 предмета, которые игроки могут найти. Добавь интересные детали, которые намекают на историю или могут быть использованы в сюжете.
+
+Верни ТОЛЬКО JSON:
+{
+  "items": [
+    {
+      "name": "Название предмета",
+      "description": "Описание (1-2 предложения)",
+      "value": "примерная стоимость в золоте",
+      "interesting_detail": "Интересная деталь (надпись, потёртость, странность)",
+      "potential_use": "Как можно использовать или что это может значить (опционально)"
+    }
+  ],
+  "total_gold": "количество монет (если есть)"
+}`;
+
+/**
+ * Генератор описаний локаций
+ */
+export const QUICK_LOCATION_PROMPT = (params: {
+  type: 'room' | 'building' | 'outdoor' | 'encounter_site';
+  style?: string;
+  atmosphere?: 'welcoming' | 'creepy' | 'mysterious' | 'dangerous' | 'peaceful';
+}) => `Создай БЫСТРОЕ ОПИСАНИЕ ЛОКАЦИИ для D&D 5e.
+
+Тип: ${params.type}
+${params.style ? `Стиль: ${params.style}` : ''}
+${params.atmosphere ? `Атмосфера: ${params.atmosphere}` : ''}
+
+Создай атмосферное описание, которое мастер может зачитать игрокам. Включи детали для всех органов чувств (зрение, слух, запах).
+
+Верни ТОЛЬКО JSON:
+{
+  "name": "Название локации",
+  "description": "Детальное описание (3-4 предложения) - что видят, слышат, чувствуют персонажи",
+  "key_features": ["особенность 1", "особенность 2", "особенность 3"],
+  "hidden_details": ["что можно найти при осмотре", "тайна или секрет"],
+  "atmosphere_note": "Одно предложение для настроения (для мастера)"
+}`;
+
+/**
+ * Генератор осложнений в бою
+ */
+export const QUICK_COMPLICATION_PROMPT = (params: {
+  environment?: string;
+  currentSituation?: string;
+}) => `Создай ОСЛОЖНЕНИЕ В БОЮ для D&D 5e.
+
+${params.environment ? `Окружение: ${params.environment}` : ''}
+${params.currentSituation ? `Текущая ситуация: ${params.currentSituation}` : ''}
+
+Создай неожиданное осложнение, которое сделает бой интереснее и динамичнее. Это может быть изменение окружения, прибытие подкреплений, ловушка, или что-то ещё.
+
+Верни ТОЛЬКО JSON:
+{
+  "title": "Название осложнения",
+  "description": "Что происходит (2-3 предложения)",
+  "mechanical_effect": "Игровой эффект (опасность, DC проверки, урон, условие местности)",
+  "how_to_resolve": "Как игроки могут справиться с этим"
+}`;
+
+/**
+ * Генератор сюжетных твистов
+ */
+export const QUICK_TWIST_PROMPT = (params: {
+  context?: string;
+  intensity?: 'minor' | 'moderate' | 'major';
+}) => `Создай СЮЖЕТНЫЙ ТВИСТ для D&D 5e.
+
+${params.context ? `Контекст: ${params.context}` : ''}
+${params.intensity ? `Интенсивность: ${params.intensity}` : 'Интенсивность: moderate'}
+
+Создай неожиданный поворот сюжета, который удивит игроков и добавит глубины истории.
+
+Верни ТОЛЬКО JSON:
+{
+  "title": "Название твиста",
+  "revelation": "Что открывается (2-3 предложения)",
+  "implications": ["последствие 1", "последствие 2"],
+  "how_to_introduce": "Как ввести этот твист в игру (подсказка для мастера)"
+}`;
+
+/**
+ * Быстрая генерация диалога NPC
+ */
+export const QUICK_DIALOGUE_PROMPT = (params: {
+  npcType: string;
+  situation: string;
+  mood?: string;
+}) => `Создай быструю РЕПЛИКУ NPC для D&D 5e.
+
+Тип NPC: ${params.npcType}
+Ситуация: ${params.situation}
+${params.mood ? `Настроение: ${params.mood}` : ''}
+
+Создай 3-4 варианта реплик, которые этот NPC может сказать в данной ситуации. Реплики должны быть характерными и передавать личность.
+
+Верни ТОЛЬКО JSON:
+{
+  "dialogue_options": [
+    "Вариант 1 - дружелюбный",
+    "Вариант 2 - нейтральный", 
+    "Вариант 3 - враждебный/подозрительный",
+    "Вариант 4 - с намёком на информацию"
+  ],
+  "body_language": "Язык тела и жесты (1 предложение)",
+  "voice_note": "Как говорит (тихо/громко, акцент, манера)"
+}`;
+
+// ===== ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ (DALL-E 3) =====
+
+/**
+ * Генерация промпта для изображения персонажа
+ */
+export const IMAGE_CHARACTER_PROMPT = (params: {
+  description: string;
+  race?: string;
+  characterClass?: string;
+  age?: string;
+  style?: 'realistic' | 'fantasy_art' | 'concept_art' | 'token' | 'painting' | 'comic';
+  mood?: string;
+}) => `Ты — эксперт по созданию промптов для DALL-E 3. Твоя задача — создать качественный английский промпт для генерации ПОРТРЕТА персонажа D&D.
+
+ОПИСАНИЕ ОТ МАСТЕРА:
+${params.description}
+
+${params.race ? `Раса: ${params.race}` : ''}
+${params.characterClass ? `Класс: ${params.characterClass}` : ''}
+${params.age ? `Возраст: ${params.age}` : ''}
+${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
+${params.mood ? `Настроение: ${params.mood}` : ''}
+
+ТРЕБОВАНИЯ:
+- Создай детальный промпт на английском для DALL-E 3
+- Портретная ориентация (portrait)
+- Фокус на лице и верхней части тела
+- Добавь детали стиля D&D фэнтези
+- Высокое качество, детализация
+- БЕЗ текста на изображении
+- БЕЗ фона реального мира (только фэнтези)
+
+Стили:
+- realistic: "photorealistic portrait"
+- fantasy_art: "fantasy art portrait, D&D official art style, digital painting"
+- concept_art: "detailed concept art, character design sheet"
+- token: "top-down view token for VTT, simple clean design, circular frame"
+- painting: "oil painting portrait, classical fantasy art"
+- comic: "comic book style portrait, graphic novel art"
+
+Верни ТОЛЬКО JSON:
+{
+  "prompt": "детальный английский промпт для DALL-E 3",
+  "size": "1024x1024",
+  "style": "${params.style || 'fantasy_art'}"
+}`;
+
+/**
+ * Генерация промпта для изображения локации
+ */
+export const IMAGE_LOCATION_PROMPT = (params: {
+  description: string;
+  locationType?: string;
+  timeOfDay?: 'dawn' | 'day' | 'sunset' | 'night';
+  weather?: 'clear' | 'fog' | 'rain' | 'snow' | 'storm';
+  style?: 'realistic' | 'fantasy_art' | 'concept_art' | 'painting';
+  atmosphere?: string;
+}) => `Ты — эксперт по созданию промптов для DALL-E 3. Твоя задача — создать качественный английский промпт для генерации ЛОКАЦИИ/ПЕЙЗАЖА для D&D.
+
+ОПИСАНИЕ ОТ МАСТЕРА:
+${params.description}
+
+${params.locationType ? `Тип локации: ${params.locationType}` : ''}
+${params.timeOfDay ? `Время суток: ${params.timeOfDay}` : ''}
+${params.weather ? `Погода: ${params.weather}` : ''}
+${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
+${params.atmosphere ? `Атмосфера: ${params.atmosphere}` : ''}
+
+ТРЕБОВАНИЯ:
+- Создай детальный промпт на английском для DALL-E 3
+- Широкоформатная ориентация (landscape)
+- Атмосферная сцена с деталями окружения
+- Стиль D&D фэнтези
+- Высокое качество, кинематографическая композиция
+- БЕЗ текста на изображении
+- БЕЗ людей на переднем плане (если не указано)
+
+Время суток:
+- dawn: "dawn lighting, soft golden hour"
+- day: "bright daylight, clear visibility"
+- sunset: "sunset lighting, warm orange and purple sky"
+- night: "night scene, moonlight, starry sky"
+
+Погода:
+- clear: "clear weather, good visibility"
+- fog: "thick fog, mysterious atmosphere"
+- rain: "heavy rain, wet surfaces"
+- snow: "snowing, winter landscape"
+- storm: "dramatic storm, lightning"
+
+Верни ТОЛЬКО JSON:
+{
+  "prompt": "детальный английский промпт для DALL-E 3",
+  "size": "1792x1024",
+  "style": "${params.style || 'fantasy_art'}"
+}`;
+
+/**
+ * Генерация промпта для изображения предмета
+ */
+export const IMAGE_ITEM_PROMPT = (params: {
+  description: string;
+  itemType?: string;
+  rarity?: 'common' | 'uncommon' | 'rare' | 'legendary';
+  style?: 'realistic' | 'fantasy_art' | 'icon' | 'painting';
+  magicalEffect?: string;
+}) => `Ты — эксперт по созданию промптов для DALL-E 3. Твоя задача — создать качественный английский промпт для генерации ПРЕДМЕТА/АРТЕФАКТА для D&D.
+
+ОПИСАНИЕ ОТ МАСТЕРА:
+${params.description}
+
+${params.itemType ? `Тип предмета: ${params.itemType}` : ''}
+${params.rarity ? `Редкость: ${params.rarity}` : ''}
+${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
+${params.magicalEffect ? `Магический эффект: ${params.magicalEffect}` : ''}
+
+ТРЕБОВАНИЯ:
+- Создай детальный промпт на английском для DALL-E 3
+- Квадратная ориентация
+- Предмет на нейтральном/подходящем фоне
+- Детализация материалов и текстур
+- Магические эффекты (если есть)
+- БЕЗ текста на изображении
+- Студийное освещение для лучшей видимости деталей
+
+Редкость влияет на детализацию:
+- common: "simple design, basic materials"
+- uncommon: "well-crafted, quality materials, minor magical glow"
+- rare: "intricate design, precious materials, visible magical aura"
+- legendary: "masterwork quality, divine materials, powerful magical effects, legendary artifact"
+
+Верни ТОЛЬКО JSON:
+{
+  "prompt": "детальный английский промпт для DALL-E 3",
+  "size": "1024x1024",
+  "style": "${params.style || 'fantasy_art'}"
+}`;
+
+/**
+ * Генерация промпта для боевой сцены
+ */
+export const IMAGE_SCENE_PROMPT = (params: {
+  description: string;
+  scale?: 'duel' | 'skirmish' | 'battle' | 'war';
+  environment?: string;
+  style?: 'realistic' | 'fantasy_art' | 'concept_art' | 'painting' | 'epic';
+}) => `Ты — эксперт по созданию промптов для DALL-E 3. Твоя задача — создать качественный английский промпт для генерации БОЕВОЙ СЦЕНЫ для D&D.
+
+ОПИСАНИЕ ОТ МАСТЕРА:
+${params.description}
+
+${params.scale ? `Масштаб: ${params.scale}` : ''}
+${params.environment ? `Окружение: ${params.environment}` : ''}
+${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
+
+ТРЕБОВАНИЯ:
+- Создай детальный промпт на английском для DALL-E 3
+- Широкоформатная ориентация (landscape)
+- Динамичная композиция
+- Ощущение движения и экшена
+- Драматическое освещение
+- D&D фэнтези стиль
+- БЕЗ текста на изображении
+
+Масштаб:
+- duel: "one-on-one duel, intimate combat, detailed characters"
+- skirmish: "small group combat, 3-6 fighters, tactical positioning"
+- battle: "large battle scene, dozens of combatants, epic scale"
+- war: "massive war scene, armies clashing, epic panoramic view"
+
+Стили:
+- epic: "epic fantasy art, dramatic lighting, cinematic composition"
+- realistic: "realistic battle scene, gritty and detailed"
+- fantasy_art: "fantasy art battle scene, D&D official art style"
+
+Верни ТОЛЬКО JSON:
+{
+  "prompt": "детальный английский промпт для DALL-E 3",
+  "size": "1792x1024",
+  "style": "${params.style || 'fantasy_art'}"
+}`;
+
+// ===== БАЛАНСИРОВЩИК ЭНКАУНТЕРОВ =====
+
+/**
+ * Генерация сбалансированного энкаунтера с AI-подсказками
+ */
+export const BALANCED_ENCOUNTER_PROMPT = (params: {
+  monsters: Array<{ name: string; cr: string; count: number }>;
+  partyLevel: number;
+  partySize: number;
+  difficulty: string;
+  environment?: string;
+  context?: string;
+}) => `Создай ДЕТАЛЬНОЕ ОПИСАНИЕ боевого энкаунтера для D&D 5e на основе сбалансированного состава монстров.
+
+СОСТАВ ЭНКАУНТЕРА:
+${params.monsters.map(m => `- ${m.name} × ${m.count} (CR ${m.cr})`).join('\n')}
+
+ПАРАМЕТРЫ ПАРТИИ:
+- Уровень: ${params.partyLevel}
+- Размер партии: ${params.partySize} игроков
+- Сложность: ${params.difficulty}
+${params.environment ? `- Окружение: ${params.environment}` : ''}
+${params.context ? `- Контекст: ${params.context}` : ''}
+
+ЗАДАЧА:
+Создай детальное описание энкаунтера, включая:
+1. Как начинается бой (завязка)
+2. Расстановку врагов
+3. Тактику каждого типа монстров
+4. Как они взаимодействуют друг с другом
+5. Условия победы/отступления врагов
+6. Особенности окружения, которые можно использовать
+7. Награды за победу
+
+Верни ТОЛЬКО JSON:
+{
+  "title": "Название энкаунтера",
+  "description": "Детальное описание как начинается бой (2-3 абзаца)",
+  "setup": {
+    "initial_distance": "расстояние до врагов в футах",
+    "enemy_positioning": "как расставлены враги",
+    "terrain_features": ["особенность 1", "особенность 2"]
+  },
+  "tactics": {
+    "general_strategy": "общая стратегия врагов",
+    "per_monster": [
+      {
+        "monster": "название монстра",
+        "role": "роль в бою (танк/дд/контроль/поддержка)",
+        "behavior": "как действует этот монстр",
+        "priority_targets": "кого атакует в первую очередь"
+      }
+    ],
+    "retreat_condition": "когда враги отступают или сдаются"
+  },
+  "environment": {
+    "description": "описание окружения",
+    "hazards": ["опасность 1", "опасность 2"],
+    "useful_features": ["что можно использовать в бою"]
+  },
+  "rewards": {
+    "gold": примерное количество золота,
+    "items": ["предмет 1", "предмет 2"],
+    "xp": общий XP за энкаунтер
+  },
+  "dm_tips": ["совет 1 для мастера", "совет 2"]
+}`;
+
+// ===== ГЕНЕРАТОР КВЕСТОВ =====
+
+/**
+ * Генерация квеста с учётом сеттинга проекта
+ */
+export const QUEST_GENERATOR_PROMPT = (params: {
+  projectTitle: string;
+  projectSynopsis: string;
+  setting: string;
+  questType: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  partyLevel?: number;
+  availableNPCs?: Array<{ name: string; role: string }>;
+  availableLocations?: string[];
+  context?: string;
+}) => `Создай ДЕТАЛЬНЫЙ КВЕСТ для D&D 5e, который ОРГАНИЧНО ВПИСЫВАЕТСЯ в существующую кампанию.
+
+КОНТЕКСТ КАМПАНИИ:
+Название: ${params.projectTitle}
+Сюжет: ${params.projectSynopsis}
+Сеттинг: ${params.setting}
+${params.partyLevel ? `Уровень партии: ${params.partyLevel}` : ''}
+
+${params.availableNPCs && params.availableNPCs.length > 0 ? `
+СУЩЕСТВУЮЩИЕ NPC (можешь использовать как квестодателей):
+${params.availableNPCs.map(npc => `- ${npc.name} (${npc.role})`).join('\n')}
+` : ''}
+
+${params.availableLocations && params.availableLocations.length > 0 ? `
+СУЩЕСТВУЮЩИЕ ЛОКАЦИИ:
+${params.availableLocations.join(', ')}
+` : ''}
+
+ПАРАМЕТРЫ КВЕСТА:
+Тип: ${params.questType}
+Сложность: ${params.difficulty}
+${params.context ? `Дополнительный контекст: ${params.context}` : ''}
+
+ТИПЫ КВЕСТОВ:
+- rescue: спасение кого-то или чего-то
+- investigation: расследование тайны или преступления
+- escort: сопровождение/защита кого-то
+- heist: ограбление/кража
+- defense: защита локации или персонажа
+- delivery: доставка предмета или сообщения
+- assassination: устранение цели
+- diplomatic: дипломатическая миссия/переговоры
+
+ВАЖНО:
+- Квест должен ЕСТЕСТВЕННО вписываться в сюжет кампании
+- Используй СУЩЕСТВУЮЩИХ NPC как квестодателей (если есть)
+- Связывай с существующими локациями
+- Учитывай сеттинг и атмосферу кампании
+- Добавь моральную дилемму или выбор
+- Квест должен иметь последствия для мира
+
+Верни ТОЛЬКО JSON:
+{
+  "title": "Название квеста",
+  "questType": "${params.questType}",
+  "description": "Детальное описание квеста (2-3 абзаца) - что произошло, почему это важно",
+  "questGiver": {
+    "name": "Имя квестодателя (выбери из существующих NPC или создай нового)",
+    "motivation": "Почему он даёт этот квест",
+    "offer": "Что и как он предлагает игрокам (начальный диалог)"
+  },
+  "objective": "Главная цель квеста (1-2 предложения)",
+  "obstacles": [
+    {
+      "title": "Препятствие 1",
+      "description": "Что нужно преодолеть",
+      "challenge_type": "combat/social/puzzle/exploration",
+      "difficulty_check": "DC проверки или CR врагов"
+    },
+    {
+      "title": "Препятствие 2",
+      "description": "Что нужно преодолеть",
+      "challenge_type": "combat/social/puzzle/exploration",
+      "difficulty_check": "DC проверки или CR врагов"
+    },
+    {
+      "title": "Препятствие 3",
+      "description": "Что нужно преодолеть",
+      "challenge_type": "combat/social/puzzle/exploration",
+      "difficulty_check": "DC проверки или CR врагов"
+    }
+  ],
+  "rewards": {
+    "gold": примерное количество золота,
+    "items": ["магический предмет или ценность"],
+    "xp": примерный XP,
+    "reputation": "с кем улучшится репутация",
+    "other": "другие награды (информация, связи, доступ и т.д.)"
+  },
+  "complications": [
+    "Возможное осложнение 1",
+    "Возможное осложнение 2"
+  ],
+  "twist": "Неожиданный поворот или открытие в середине квеста",
+  "consequences": {
+    "success": "Что изменится в мире, если квест выполнен успешно",
+    "failure": "Что произойдёт, если квест провален",
+    "partial": "Что будет, если выполнено частично или с компромиссом"
+  },
+  "moral_choice": "Моральная дилемма или важный выбор, который встанет перед игроками",
+  "connection_to_campaign": "Как этот квест связан с главным сюжетом кампании (может быть слабо или сильно)",
+  "estimated_sessions": число сессий (1-3),
+  "dm_tips": ["совет 1 для мастера", "совет 2", "совет 3"]
+}`;

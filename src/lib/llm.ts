@@ -42,14 +42,30 @@ class MockLLMAdapter implements LLMAdapter {
     // Генерируем mock-ответ в зависимости от типа запроса
     let content = '';
     
-    if (lastMessage.content.includes('session') || lastMessage.content.includes('campaign')) {
+    if (lastMessage.content.includes('session') || lastMessage.content.includes('campaign') || lastMessage.content.includes('БАЗОВОЕ ОПИСАНИЕ')) {
       content = this.generateMockSession();
-    } else if (lastMessage.content.includes('scene')) {
+    } else if (lastMessage.content.includes('scene') || lastMessage.content.includes('СЦЕН')) {
       content = this.generateMockScene();
-    } else if (lastMessage.content.includes('NPC')) {
+    } else if (lastMessage.content.includes('NPC') || lastMessage.content.includes('ПЕРСОНАЖ')) {
       content = this.generateMockNPC();
-    } else if (lastMessage.content.includes('encounter')) {
+    } else if (lastMessage.content.includes('encounter') || lastMessage.content.includes('энкаунтер')) {
       content = this.generateMockEncounter();
+    } else if (lastMessage.content.includes('ИМЯ') || lastMessage.content.includes('НАЗВАНИЕ')) {
+      content = this.generateMockName();
+    } else if (lastMessage.content.includes('БЫСТРЫЙ NPC')) {
+      content = this.generateMockQuickNPC();
+    } else if (lastMessage.content.includes('СОБЫТИЕ')) {
+      content = this.generateMockEvent();
+    } else if (lastMessage.content.includes('НАХОДКУ')) {
+      content = this.generateMockLoot();
+    } else if (lastMessage.content.includes('ЛОКАЦИИ')) {
+      content = this.generateMockLocation();
+    } else if (lastMessage.content.includes('ОСЛОЖНЕНИЕ')) {
+      content = this.generateMockComplication();
+    } else if (lastMessage.content.includes('ТВИСТ')) {
+      content = this.generateMockTwist();
+    } else if (lastMessage.content.includes('РЕПЛИКУ')) {
+      content = this.generateMockDialogue();
     } else {
       content = 'Mock response from LLM adapter. Replace with real implementation.';
     }
@@ -294,6 +310,115 @@ class MockLLMAdapter implements LLMAdapter {
       estimatedLevel: 2,
     }, null, 2);
   }
+
+  private generateMockName(): string {
+    return JSON.stringify({
+      name: 'Торвальд Железный Кулак',
+      nickname: 'Железный',
+      flavor: 'Имя дано за невероятную силу и упорство в бою',
+    }, null, 2);
+  }
+
+  private generateMockQuickNPC(): string {
+    return JSON.stringify({
+      name: 'Гарольд',
+      race: 'Человек',
+      appearance: 'Полноватый мужчина средних лет с залысиной и добрым лицом. Носит фартук, испачканный пивом.',
+      personality: 'Дружелюбный и болтливый, любит посплетничать',
+      quirk: 'Постоянно протирает кружки, даже когда говорит',
+      catchphrase: 'Эх, я бы вам рассказал, да язык мой - враг мой!',
+      secret: 'Раньше был контрабандистом и знает все тайные тропы в округе',
+    }, null, 2);
+  }
+
+  private generateMockEvent(): string {
+    return JSON.stringify({
+      title: 'Уличная потасовка',
+      description: 'На рыночной площади двое пьяных моряков затеяли драку. Один уже достал нож. Толпа собирается вокруг, но никто не вмешивается. Стража где-то далеко.',
+      possibleActions: [
+        'Вмешаться и остановить драку',
+        'Отвлечь одного из драчунов',
+        'Пройти мимо, не вмешиваясь',
+      ],
+      consequences: {
+        if_help: 'Один из моряков окажется членом местной гильдии. Он будет благодарен и предложит услугу',
+        if_ignore: 'Драка перерастет в массовую потасовку, стража закроет район на несколько часов',
+      },
+    }, null, 2);
+  }
+
+  private generateMockLoot(): string {
+    return JSON.stringify({
+      items: [
+        {
+          name: 'Потёртый медальон',
+          description: 'Серебряный медальон с выцветшим гербом неизвестного дома',
+          value: '15 золотых',
+          interesting_detail: 'На обратной стороне выгравирована надпись на эльфийском: "Помни клятву"',
+          potential_use: 'Может быть знаком знатного рода или ключом к квесту',
+        },
+        {
+          name: 'Связка старых ключей',
+          description: 'Пять ржавых ключей на кольце',
+          value: '1 золотой',
+          interesting_detail: 'Один ключ выглядит необычно новым',
+          potential_use: 'Могут открывать что-то важное в городе',
+        },
+      ],
+      total_gold: '8 золотых',
+    }, null, 2);
+  }
+
+  private generateMockLocation(): string {
+    return JSON.stringify({
+      name: 'Таверна "Спящий Дракон"',
+      description: 'Уютное заведение с низкими балочными потолками и большим каменным камином в центре зала. Пахнет жареным мясом, пивом и дымом. Слышен гул разговоров и смех посетителей. Тепло и шумно.',
+      key_features: [
+        'Большой камин с горящими дровами',
+        'Бар из темного дуба с множеством бочек',
+        'Лестница на второй этаж с комнатами',
+      ],
+      hidden_details: [
+        'За баром есть потайная дверь в подвал',
+        'Один из постояльцев явно следит за группой',
+      ],
+      atmosphere_note: 'Атмосфера располагает к расслаблению, но внимательные заметят напряжение среди некоторых посетителей',
+    }, null, 2);
+  }
+
+  private generateMockComplication(): string {
+    return JSON.stringify({
+      title: 'Обрушение потолка',
+      description: 'От мощного удара заклинания трескается опорная балка, и часть потолка начинает обрушиваться! Камни и деревянные обломки падают в центр зала боя.',
+      mechanical_effect: 'Dex save DC 14 для всех в центральной зоне, провал = 2d6 дробящего урона. Центр зала становится труднопроходимой местностью',
+      how_to_resolve: 'Можно отойти к стенам (безопасная зона) или использовать заклинания контроля окружения',
+    }, null, 2);
+  }
+
+  private generateMockTwist(): string {
+    return JSON.stringify({
+      title: 'Союзник — предатель',
+      revelation: 'NPC, который помогал группе с самого начала, оказывается шпионом антагониста. Он тайно передавал информацию о передвижениях и планах партии. Все "случайные" засады были организованы.',
+      implications: [
+        'Враги знают слабости партии и могут подготовить ловушки',
+        'Доверять новым союзникам станет сложнее',
+      ],
+      how_to_introduce: 'Группа перехватывает зашифрованное послание или случайно застает NPC за разговором с вражеским агентом',
+    }, null, 2);
+  }
+
+  private generateMockDialogue(): string {
+    return JSON.stringify({
+      dialogue_options: [
+        'Добро пожаловать, путники! Чем могу служить? У нас лучший эль в округе!',
+        'Эм... здравствуйте. Что вам нужно? Только не шумите, у меня голова болит',
+        'И что вам здесь надо? Видите, я занят. Покупайте что-нибудь или проваливайте',
+        'Ох, новые лица! Проходите, проходите... Говорят, на севере творятся странные дела. Слыхали что-нибудь?',
+      ],
+      body_language: 'Протирает стакан круговыми движениями, не отрывая взгляда от посетителей',
+      voice_note: 'Говорит с лёгким хрипом, голос низкий и немного усталый',
+    }, null, 2);
+  }
 }
 
 /**
@@ -421,4 +546,31 @@ export function createLLMAdapter(): LLMAdapter {
 
 // Экспортируем дефолтный адаптер
 export const llm = createLLMAdapter();
+
+/**
+ * Вспомогательная функция для быстрой генерации контента
+ */
+export async function generateContent(
+  messages: LLMMessage[],
+  options?: LLMOptions
+): Promise<{
+  content: string;
+  usage: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+  model: string;
+}> {
+  const response = await llm.complete(messages, options);
+  return {
+    content: response.content,
+    usage: {
+      promptTokens: response.promptTokens,
+      completionTokens: response.completionTokens,
+      totalTokens: response.totalTokens,
+    },
+    model: response.model,
+  };
+}
 

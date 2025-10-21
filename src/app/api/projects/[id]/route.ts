@@ -25,6 +25,15 @@ export async function GET(
         encounters: {
           orderBy: { createdAt: 'desc' },
         },
+        quests: {
+          orderBy: { createdAt: 'desc' },
+        },
+        playerCharacters: {
+          orderBy: { createdAt: 'asc' },
+        },
+        sessions: {
+          orderBy: { sessionNumber: 'desc' },
+        },
       },
     });
 
