@@ -14,6 +14,8 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:sync:remote": "tsx scripts/sync-db.ts",
+    "db:export": "tsx scripts/export-data.ts",
+    "db:import": "tsx scripts/import-data.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
