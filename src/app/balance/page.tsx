@@ -243,16 +243,19 @@ export default function BalancePage() {
 
           <div className="grid grid-cols-1 gap-4">
             {encounters.map((variant, index) => (
-              <Card
+              <div
                 key={index}
-                className={`cursor-pointer transition-all ${
-                  selectedVariant === index
-                    ? 'border-primary border-2'
-                    : 'border-gray-800 hover:border-gray-700'
-                }`}
                 onClick={() => setSelectedVariant(index)}
+                className="cursor-pointer"
               >
-                <div className="flex items-start justify-between">
+                <Card
+                  className={`transition-all ${
+                    selectedVariant === index
+                      ? 'border-primary border-2'
+                      : 'border-gray-800 hover:border-gray-700'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-3">
                       <span className="text-lg font-bold text-primary">
@@ -303,6 +306,7 @@ export default function BalancePage() {
                   </div>
                 </div>
               </Card>
+              </div>
             ))}
           </div>
         </div>

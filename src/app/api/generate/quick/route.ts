@@ -58,28 +58,28 @@ export async function POST(request: NextRequest) {
     let prompt = '';
     switch (type) {
       case 'name':
-        prompt = QUICK_NAME_PROMPT(params);
+        prompt = QUICK_NAME_PROMPT(params as any);
         break;
       case 'npc':
-        prompt = QUICK_NPC_PROMPT(params);
+        prompt = QUICK_NPC_PROMPT(params as any);
         break;
       case 'event':
-        prompt = QUICK_EVENT_PROMPT(params);
+        prompt = QUICK_EVENT_PROMPT(params as any);
         break;
       case 'loot':
-        prompt = QUICK_LOOT_PROMPT(params);
+        prompt = QUICK_LOOT_PROMPT(params as any);
         break;
       case 'location':
-        prompt = QUICK_LOCATION_PROMPT(params);
+        prompt = QUICK_LOCATION_PROMPT(params as any);
         break;
       case 'complication':
-        prompt = QUICK_COMPLICATION_PROMPT(params);
+        prompt = QUICK_COMPLICATION_PROMPT(params as any);
         break;
       case 'twist':
-        prompt = QUICK_TWIST_PROMPT(params);
+        prompt = QUICK_TWIST_PROMPT(params as any);
         break;
       case 'dialogue':
-        prompt = QUICK_DIALOGUE_PROMPT(params);
+        prompt = QUICK_DIALOGUE_PROMPT(params as any);
         break;
       default:
         return NextResponse.json({ error: 'Invalid generation type' }, { status: 400 });
