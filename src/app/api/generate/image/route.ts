@@ -9,7 +9,7 @@ import {
   SYSTEM_PROMPT,
 } from '@/lib/prompts';
 
-const DEMO_USER_ID = 'demo-user-001';
+const DEMO_USER_ID = process.env.DEMO_USER_ID || 'demo-user-001';
 
 type ImageType = 'character' | 'location' | 'item' | 'scene';
 

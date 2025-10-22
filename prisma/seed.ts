@@ -26,9 +26,10 @@ async function main() {
 
   // Создаем demo-пользователя (для обратной совместимости)
   const demoUser = await prisma.user.upsert({
-    where: { username: 'demo' },
+    where: { id: 'demo-user-001' },
     update: {},
     create: {
+      id: 'demo-user-001',
       username: 'demo',
       password: hashPassword('demo'),
       name: 'Demo Мастер',

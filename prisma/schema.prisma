@@ -170,7 +170,7 @@ model PlayerCharacter {
   level        Int      @default(1)
   background   String?  // Предыстория (Background)
   alignment    String?
-  
+
   // Основные характеристики
   strength     Int      @default(10)
   dexterity    Int      @default(10)
@@ -178,7 +178,7 @@ model PlayerCharacter {
   intelligence Int      @default(10)
   wisdom       Int      @default(10)
   charisma     Int      @default(10)
-  
+
   // Игровые параметры
   maxHP        Int      @default(10)
   currentHP    Int      @default(10)
@@ -186,27 +186,27 @@ model PlayerCharacter {
   speed        Int      @default(30)
   initiative   Int      @default(0)
   proficiencyBonus Int  @default(2)
-  
+
   // Навыки и спасброски
   savingThrows String?  // JSON с профами спасбросков
   skills       String?  // JSON с навыками и профами
-  
+
   // Инвентарь и снаряжение
   inventory    String?  // JSON с предметами
   equipment    String?  // JSON с экипированными предметами
   gold         Int      @default(0)
-  
+
   // Заклинания (для кастеров)
   spells       String?  // JSON со списком заклинаний
   spellSlots   String?  // JSON с ячейками заклинаний
-  
+
   // Дополнительно
   appearance   String?  // Внешность
   personality  String?  // Черты личности
   backstory    String?  // Предыстория персонажа
   notes        String?  // Заметки мастера об этом персонаже
   imageUrl     String?  // Портрет персонажа
-  
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -221,26 +221,26 @@ model Session {
   title        String   @default("Сессия") // Название сессии
   date         DateTime @default(now()) // Дата проведения
   duration     Int?     // Длительность в минутах
-  
+
   // Заметки
   summary      String?  // Краткое резюме что произошло
   notes        String?  // Детальные заметки мастера
   playerDecisions String? // Важные решения игроков
   combatLog    String?  // Лог боёв (опционально)
-  
+
   // Связи
   scenesPlayed String?  // JSON с ID сцен, которые были пройдены
   npcsEncountered String? // JSON с ID NPC, с которыми встретились
   questsUpdated String?  // JSON с обновлениями квестов
-  
+
   // Награды и прогресс
   xpAwarded    Int?     // Выданный опыт
   lootAcquired String?  // JSON с полученными предметами
-  
+
   // Для следующей сессии
   cliffhanger  String?  // На чём остановились
   nextGoals    String?  // Цели на следующую сессию
-  
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
