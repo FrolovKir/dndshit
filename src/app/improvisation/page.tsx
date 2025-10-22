@@ -420,6 +420,62 @@ export default function ImprovisationPage() {
             </Button>
           </div>
         </Card>
+
+        {/* 9. Слухи и сплетни */}
+        <Card>
+          <h3 className="text-xl font-bold mb-4">👂 Слухи</h3>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-400">
+              Генерирует интересные слухи для таверн и городов
+            </p>
+
+            <Button onClick={() => generateQuick('rumor', {})} disabled={loading} fullWidth>
+              {loading ? 'Генерация...' : 'Сгенерировать'}
+            </Button>
+          </div>
+        </Card>
+
+        {/* 10. Погодные явления */}
+        <Card>
+          <h3 className="text-xl font-bold mb-4">🌦️ Погода</h3>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-400">
+              Создает интересные погодные условия с игровыми эффектами
+            </p>
+
+            <Button onClick={() => generateQuick('weather', {})} disabled={loading} fullWidth>
+              {loading ? 'Генерация...' : 'Сгенерировать'}
+            </Button>
+          </div>
+        </Card>
+
+        {/* 11. Дорожные встречи */}
+        <Card>
+          <h3 className="text-xl font-bold mb-4">🛤️ Встреча в пути</h3>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-400">
+              Случайные встречи на дорогах и тропах
+            </p>
+
+            <Button onClick={() => generateQuick('road_encounter', {})} disabled={loading} fullWidth>
+              {loading ? 'Генерация...' : 'Сгенерировать'}
+            </Button>
+          </div>
+        </Card>
+
+        {/* 12. Болезни и проклятия */}
+        <Card>
+          <h3 className="text-xl font-bold mb-4">🦠 Болезнь/Проклятие</h3>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-400">
+              Создает интересные недуги с симптомами и лечением
+            </p>
+
+            <Button onClick={() => generateQuick('affliction', {})} disabled={loading} fullWidth>
+              {loading ? 'Генерация...' : 'Сгенерировать'}
+            </Button>
+          </div>
+        </Card>
       </div>
 
       {/* История генерации */}
@@ -475,6 +531,10 @@ function getTypeLabel(type: string): string {
     complication: '⚔️ Осложнение',
     twist: '🔮 Твист',
     dialogue: '💬 Диалог',
+    rumor: '👂 Слух',
+    weather: '🌦️ Погода',
+    road_encounter: '🛤️ Встреча',
+    affliction: '🦠 Недуг',
   };
   return labels[type] || type;
 }
@@ -608,6 +668,67 @@ function renderGenerationResult(type: string, data: any) {
           </div>
           <p className="text-sm mb-1"><strong>Язык тела:</strong> {data.body_language}</p>
           <p className="text-sm"><strong>Голос:</strong> {data.voice_note}</p>
+        </div>
+      );
+
+    case 'rumor':
+      return (
+        <div>
+          <p className="text-lg italic text-primary mb-2">"{data.rumor}"</p>
+          <p className="text-sm mb-1"><strong>Источник:</strong> {data.source}</p>
+          <p className="text-sm mb-1"><strong>Достоверность:</strong> {data.reliability}</p>
+          <p className="text-sm text-gray-400">{data.context}</p>
+        </div>
+      );
+
+    case 'weather':
+      return (
+        <div>
+          <p className="text-xl font-bold text-primary mb-2">{data.condition}</p>
+          <p className="mb-2">{data.description}</p>
+          <p className="text-sm mb-2"><strong className="text-yellow-400">Игровой эффект:</strong> {data.game_effect}</p>
+          <p className="text-sm"><strong className="text-blue-400">Длительность:</strong> {data.duration}</p>
+        </div>
+      );
+
+    case 'road_encounter':
+      return (
+        <div>
+          <p className="text-xl font-bold text-primary mb-2">{data.title}</p>
+          <p className="mb-3">{data.description}</p>
+          <div className="mb-2">
+            <p className="text-sm font-bold text-gray-400 mb-1">Участники:</p>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              {data.participants.map((participant: string, i: number) => (
+                <li key={i}>{participant}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="text-sm space-y-1">
+            <p><strong className="text-green-400">Мирное решение:</strong> {data.peaceful_resolution}</p>
+            <p><strong className="text-red-400">Если конфликт:</strong> {data.conflict_outcome}</p>
+          </div>
+        </div>
+      );
+
+    case 'affliction':
+      return (
+        <div>
+          <p className="text-xl font-bold text-primary mb-2">{data.name}</p>
+          <p className="text-sm text-gray-400 mb-2">{data.type}</p>
+          <p className="mb-3">{data.description}</p>
+          <div className="mb-2">
+            <p className="text-sm font-bold text-gray-400 mb-1">Симптомы:</p>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              {data.symptoms.map((symptom: string, i: number) => (
+                <li key={i} className="text-red-400">{symptom}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="text-sm space-y-1">
+            <p><strong className="text-green-400">Лечение:</strong> {data.cure}</p>
+            <p><strong className="text-blue-400">Длительность:</strong> {data.duration}</p>
+          </div>
         </div>
       );
 

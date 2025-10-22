@@ -54,6 +54,7 @@ export default function Navigation() {
   const links = [
     { href: '/', label: 'Дашборд' },
     { href: '/balance', label: '⚖️ Балансировщик' },
+    { href: '/shops', label: '🏪 Магазины' },
     { href: '/tables', label: '🎲 Таблицы' },
     { href: '/improvisation', label: '⚡ Импровизация' },
     { href: '/visualize', label: '🎨 Визуализация' },
