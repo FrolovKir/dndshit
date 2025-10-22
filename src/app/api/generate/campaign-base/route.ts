@@ -11,7 +11,7 @@ import { getUserIdFromRequest } from '@/lib/auth';
  */
 export async function POST(request: NextRequest) {
   let userId = '';
-  
+
   try {
     userId = getUserIdFromRequest(request);
     const body = await request.json();
@@ -19,10 +19,13 @@ export async function POST(request: NextRequest) {
       overview,
       tone,
       atmospheric,
+      setting,
       conflictScale,
       levelRange,
       playerCount,
       playstyle,
+      sessionLength,
+      experience,
       constraints,
     } = body;
 
@@ -33,17 +36,20 @@ export async function POST(request: NextRequest) {
       overview,
       tone,
       atmospheric,
+      setting,
       conflictScale,
       levelRange,
       playerCount,
       playstyle,
+      sessionLength,
+      experience,
       constraints,
     });
     const estimatedInputTokens = estimateTokens(SYSTEM_PROMPT + userPrompt);
 
     // Проверяем лимит токенов (базовое описание ~2000 токенов)
     const creditCheck = await checkCredits(userId, estimatedInputTokens + 2000);
-    
+
     if (!creditCheck.allowed) {
       return NextResponse.json(
         { error: creditCheck.message || 'Insufficient tokens' },
@@ -67,20 +73,20 @@ export async function POST(request: NextRequest) {
     let campaignData;
     try {
       let jsonContent = response.content.trim();
-      
+
       if (jsonContent.startsWith('```json')) {
         jsonContent = jsonContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
       } else if (jsonContent.startsWith('```')) {
         jsonContent = jsonContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
       }
-      
+
       campaignData = JSON.parse(jsonContent);
-      
+
       console.log('Parsed campaign:', campaignData.title);
-      
+
     } catch (e) {
       console.error('JSON Parse Error:', e);
-      
+
       return NextResponse.json(
         { error: 'Failed to parse LLM response', details: response.content.substring(0, 500) },
         { status: 500 }
@@ -104,10 +110,13 @@ export async function POST(request: NextRequest) {
             overview,
             tone,
             atmospheric,
+            setting,
             conflictScale,
             levelRange,
             playerCount,
             playstyle,
+            sessionLength,
+            experience,
             constraints,
           },
         }),
@@ -142,7 +151,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error generating campaign base:', error);
-    
+
     // Логируем ошибку, если userId был получен
     if (userId) {
       await logRequest(
