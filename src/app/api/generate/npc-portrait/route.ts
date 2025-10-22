@@ -56,19 +56,31 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    const imageUrl = data.data[0].url;
+    const temporaryImageUrl = data.data[0].url;
 
-    console.log('[PORTRAIT] Image generated:', imageUrl);
+    console.log('[PORTRAIT] Image generated:', temporaryImageUrl);
 
-    // Обновляем NPC с URL изображения
+    // Скачиваем изображение и сохраняем локально
+    const imageResponse = await fetch(temporaryImageUrl);
+    if (!imageResponse.ok) {
+      throw new Error('Failed to download generated image');
+    }
+
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const imageBase64 = Buffer.from(imageBuffer).toString('base64');
+    const imageDataUrl = `data:image/png;base64,${imageBase64}`;
+
+    console.log('[PORTRAIT] Image saved as data URL');
+
+    // Обновляем NPC с data URL изображения (постоянный)
     const updatedNPC = await prisma.nPC.update({
       where: { id: npcId },
-      data: { imageUrl },
+      data: { imageUrl: imageDataUrl },
     });
 
     return NextResponse.json({
       success: true,
-      imageUrl,
+      imageUrl: imageDataUrl,
       npc: updatedNPC,
     });
   } catch (error: any) {

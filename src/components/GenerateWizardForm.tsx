@@ -26,15 +26,18 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
   const [currentStep, setCurrentStep] = useState<Step>('base');
   const [projectId, setProjectId] = useState<string | null>(null);
   const [sceneIds, setSceneIds] = useState<string[]>([]);
-  
+
   const [formData, setFormData] = useState({
     overview: '',
     tone: '',
     atmospheric: '',
+    setting: '',
     conflictScale: 'региональный',
     levelRange: '1-5',
     playerCount: '4',
     playstyle: 'баланс',
+    sessionLength: 'средняя',
+    experience: 'смешанная',
     constraints: '',
   });
 
@@ -47,7 +50,7 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
   ]);
 
   const updateProgress = (step: Step, updates: Partial<StepProgress>) => {
-    setProgress(prev => prev.map(p => 
+    setProgress(prev => prev.map(p =>
       p.step === step ? { ...p, ...updates } : p
     ));
   };
@@ -59,7 +62,7 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
     try {
       // ШАГ 1: Создание базового описания кампании
       updateProgress('base', { status: 'in_progress', message: 'Генерируем основу кампании...' });
-      
+
       const baseResponse = await fetch('/api/generate/campaign-base', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,10 +70,13 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
           overview: formData.overview || undefined,
           tone: formData.tone || undefined,
           atmospheric: formData.atmospheric || undefined,
+          setting: formData.setting || undefined,
           conflictScale: formData.conflictScale || undefined,
           levelRange: formData.levelRange || undefined,
           playerCount: parseInt(formData.playerCount),
           playstyle: formData.playstyle || undefined,
+          sessionLength: formData.sessionLength || undefined,
+          experience: formData.experience || undefined,
           constraints: formData.constraints || undefined,
         }),
       });
@@ -82,9 +88,9 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
 
       const baseData = await baseResponse.json();
       setProjectId(baseData.project.id);
-      
-      updateProgress('base', { 
-        status: 'completed', 
+
+      updateProgress('base', {
+        status: 'completed',
         message: `Кампания "${baseData.campaignData.title}" создана`,
         tokensUsed: baseData.tokensUsed,
       });
@@ -92,7 +98,7 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
       // ШАГ 2: Генерация сцен
       setCurrentStep('scenes');
       updateProgress('scenes', { status: 'in_progress', message: 'Генерируем 10 детальных сцен...' });
-      
+
       const scenesResponse = await fetch('/api/generate/campaign-scenes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,9 +112,9 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
 
       const scenesData = await scenesResponse.json();
       setSceneIds(scenesData.sceneIds);
-      
-      updateProgress('scenes', { 
-        status: 'completed', 
+
+      updateProgress('scenes', {
+        status: 'completed',
         message: `Создано ${scenesData.scenesCreated} сцен`,
         tokensUsed: scenesData.tokensUsed,
         itemsCreated: scenesData.scenesCreated,
@@ -117,14 +123,14 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
       // ШАГ 3: Генерация NPC для каждой сцены
       setCurrentStep('npcs');
       updateProgress('npcs', { status: 'in_progress', message: 'Создаем NPC для каждой сцены...' });
-      
+
       let totalNpcs = 0;
       let totalNpcTokens = 0;
 
       for (let i = 0; i < scenesData.sceneIds.length; i++) {
         const sceneId = scenesData.sceneIds[i];
-        updateProgress('npcs', { 
-          status: 'in_progress', 
+        updateProgress('npcs', {
+          status: 'in_progress',
           message: `Создаем NPC для сцены ${i + 1}/${scenesData.sceneIds.length}...`,
         });
 
@@ -140,9 +146,9 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
           totalNpcTokens += npcsData.tokensUsed;
         }
       }
-      
-      updateProgress('npcs', { 
-        status: 'completed', 
+
+      updateProgress('npcs', {
+        status: 'completed',
         message: `Создано ${totalNpcs} NPC`,
         tokensUsed: totalNpcTokens,
         itemsCreated: totalNpcs,
@@ -151,7 +157,7 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
       // ШАГ 4: Генерация детальных энкаунтеров для боевых сцен
       setCurrentStep('encounters');
       updateProgress('encounters', { status: 'in_progress', message: 'Создаем детальные энкаунтеры...' });
-      
+
       // Получаем боевые сцены по новому типу
       const combatScenes = scenesData.scenesData.scenes.filter(
         (s: any) => (s.type || s.sceneType) === 'Conflict' || s.sceneType === 'combat'
@@ -169,9 +175,9 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
         for (let i = 0; i < combatScenes.length; i++) {
           const sceneIndex = scenesData.scenesData.scenes.indexOf(combatScenes[i]);
           const sceneId = scenesData.sceneIds[sceneIndex];
-          
-          updateProgress('encounters', { 
-            status: 'in_progress', 
+
+          updateProgress('encounters', {
+            status: 'in_progress',
             message: `Детализируем энкаунтер ${totalEncounters + 1}/${Math.min(targetMax, combatScenes.length * rounds)}...`,
           });
 
@@ -191,9 +197,9 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
         }
         if (totalEncounters >= targetMax) break;
       }
-      
-      updateProgress('encounters', { 
-        status: 'completed', 
+
+      updateProgress('encounters', {
+        status: 'completed',
         message: `Создано ${totalEncounters} энкаунтеров`,
         tokensUsed: totalEncounterTokens,
         itemsCreated: totalEncounters,
@@ -202,27 +208,30 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
       // Завершение
       setCurrentStep('complete');
       updateProgress('complete', { status: 'completed', message: 'Кампания полностью готова!' });
-      
+
       // Успех!
       setFormData({
         overview: '',
         tone: '',
         atmospheric: '',
+        setting: '',
         conflictScale: 'региональный',
         levelRange: '1-5',
         playerCount: '4',
         playstyle: 'баланс',
+        sessionLength: 'средняя',
+        experience: 'смешанная',
         constraints: '',
       });
-      
+
       setTimeout(() => {
         if (onSuccess) onSuccess();
       }, 1500);
 
     } catch (error: any) {
       console.error('Wizard error:', error);
-      updateProgress(currentStep, { 
-        status: 'error', 
+      updateProgress(currentStep, {
+        status: 'error',
         message: error.message || 'Произошла ошибка',
       });
     } finally {
@@ -271,10 +280,10 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
             onChange={(e) => setFormData({ ...formData, conflictScale: e.target.value })}
             disabled={loading}
           >
-            <option value="локальный">локальный</option>
-            <option value="региональный">региональный</option>
-            <option value="мировая угроза">мировая угроза</option>
-            <option value="планарный">планарный</option>
+            <option value="локальный">🏘️ Локальный (город/регион)</option>
+            <option value="региональный">🏰 Региональный (королевство)</option>
+            <option value="мировая угроза">🌍 Мировая угроза</option>
+            <option value="планарный">✨ Планарный (мультивселенная)</option>
           </Select>
 
           <Select
@@ -283,11 +292,11 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
             onChange={(e) => setFormData({ ...formData, levelRange: e.target.value })}
             disabled={loading}
           >
-            <option value="1-5">1-5</option>
-            <option value="3-10">3-10</option>
-            <option value="5-10">5-10</option>
-            <option value="9-15">9-15</option>
-            <option value="10-20">10-20</option>
+            <option value="1-5">🌱 1-5 уровни (новички)</option>
+            <option value="3-8">⚔️ 3-8 уровни (герои)</option>
+            <option value="5-10">🏆 5-10 уровни (чемпионы)</option>
+            <option value="9-15">👑 9-15 уровни (лорды)</option>
+            <option value="15-20">⭐ 15-20 уровни (легенды)</option>
           </Select>
 
           <Select
@@ -296,69 +305,66 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
             onChange={(e) => setFormData({ ...formData, playerCount: e.target.value })}
             disabled={loading}
           >
-            <option value="3">3 игрока</option>
-            <option value="4">4 игрока</option>
-            <option value="5">5 игроков</option>
-            <option value="6">6 игроков</option>
+            <option value="2">👥 2 игрока (дуэт)</option>
+            <option value="3">👥 3 игрока</option>
+            <option value="4">👥 4 игрока (стандарт)</option>
+            <option value="5">👥 5 игроков</option>
+            <option value="6">👥 6 игроков (большая группа)</option>
           </Select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Select
             label="Стиль прохождения"
             value={formData.playstyle}
             onChange={(e) => setFormData({ ...formData, playstyle: e.target.value })}
             disabled={loading}
           >
-            <option value="боёв больше">боёв больше</option>
-            <option value="социалька">социалька</option>
-            <option value="баланс">баланс</option>
-            <option value="исследование мира">исследование мира</option>
+            <option value="боёв больше">⚔️ Боёв больше</option>
+            <option value="социалька">🎭 Социальные взаимодействия</option>
+            <option value="баланс">⚖️ Сбалансированно</option>
+            <option value="исследование мира">🗺️ Исследование мира</option>
+            <option value="интриги">🕵️ Интриги и заговоры</option>
           </Select>
-          <Input
-            label="Ограничения (если есть)"
-            value={formData.constraints}
-            onChange={(e) => setFormData({ ...formData, constraints: e.target.value })}
-            placeholder="нет высоких технологий, магия редка, нет богов..."
-            disabled={loading}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Сеттинг / Мир"
-            value={formData.tone}
-            onChange={(e) => setFormData({ ...formData, tone: e.target.value })}
-            placeholder="Тон/жанр или краткое название мира"
-            disabled={loading}
-          />
 
           <Select
-            label="Диапазон уровней"
-            value={formData.levelRange}
-            onChange={(e) => setFormData({ ...formData, levelRange: e.target.value })}
+            label="Длительность сессий"
+            value={formData.sessionLength}
+            onChange={(e) => setFormData({ ...formData, sessionLength: e.target.value })}
             disabled={loading}
           >
-            <option value="1-5">1-5</option>
-            <option value="3-10">3-10</option>
-            <option value="5-10">5-10</option>
-            <option value="9-15">9-15</option>
-            <option value="10-20">10-20</option>
+            <option value="короткая">⏱️ Короткие (2-3 часа)</option>
+            <option value="средняя">🕐 Средние (4-5 часов)</option>
+            <option value="длинная">🕕 Длинные (6+ часов)</option>
+          </Select>
+
+          <Select
+            label="Опыт группы"
+            value={formData.experience || 'смешанная'}
+            onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+            disabled={loading}
+          >
+            <option value="новички">🌱 Новички</option>
+            <option value="смешанная">🎯 Смешанная</option>
+            <option value="опытные">⭐ Опытные игроки</option>
           </Select>
         </div>
 
-        <Select
-          label="Количество игроков"
-          value={formData.playerCount}
-          onChange={(e) => setFormData({ ...formData, playerCount: e.target.value })}
+        <Input
+          label="Ограничения (опционально)"
+          value={formData.constraints}
+          onChange={(e) => setFormData({ ...formData, constraints: e.target.value })}
+          placeholder="нет высоких технологий, магия редка, нет богов, только люди..."
           disabled={loading}
-        >
-          <option value="2">2 игрока</option>
-          <option value="3">3 игрока</option>
-          <option value="4">4 игрока</option>
-          <option value="5">5 игроков</option>
-          <option value="6">6 игроков</option>
-        </Select>
+        />
+
+        <Input
+          label="Сеттинг / Мир (опционально)"
+          value={formData.setting}
+          onChange={(e) => setFormData({ ...formData, setting: e.target.value })}
+          placeholder="Forgotten Realms, Эберрон, свой мир..."
+          disabled={loading}
+        />
 
         <Button type="submit" loading={loading} className="w-full text-lg py-3">
           🎲 Запустить генерацию полной кампании
@@ -375,7 +381,7 @@ export default function GenerateWizardForm({ onSuccess }: GenerateWizardFormProp
 
           {/* Progress Bar */}
           <div className="w-full bg-background/50 rounded-full h-3 overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-secondary to-primary transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />

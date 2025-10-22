@@ -168,12 +168,24 @@ export async function POST(request: NextRequest) {
     }
 
     const dalleData = await dalleResponse.json();
-    const imageUrl = dalleData.data[0].url;
+    const temporaryImageUrl = dalleData.data[0].url;
     const revisedPrompt = dalleData.data[0].revised_prompt; // DALL-E может изменить промпт
 
     console.log('=== DALL-E Response ===');
-    console.log('Image URL:', imageUrl);
+    console.log('Temporary Image URL:', temporaryImageUrl);
     console.log('Revised prompt:', revisedPrompt);
+
+    // Скачиваем изображение и конвертируем в data URL для постоянного хранения
+    const imageResponse = await fetch(temporaryImageUrl);
+    if (!imageResponse.ok) {
+      throw new Error('Failed to download generated image');
+    }
+
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const imageBase64 = Buffer.from(imageBuffer).toString('base64');
+    const imageUrl = `data:image/png;base64,${imageBase64}`;
+
+    console.log('Image converted to data URL for permanent storage');
 
     // Вычитание токенов (промпт генерация + условная стоимость DALL-E)
     const totalTokens = promptResponse.usage.totalTokens + estimatedTokens;
