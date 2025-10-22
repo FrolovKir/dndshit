@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateContent } from '@/lib/llm';
+import { generateContent, parseJsonFromLLM } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
 import {
   QUICK_NAME_PROMPT,
@@ -96,13 +96,13 @@ export async function POST(request: NextRequest) {
     // Парсинг JSON
     let generatedData: any;
     try {
-      generatedData = JSON.parse(response.content);
+      generatedData = parseJsonFromLLM(response.content);
     } catch (parseError) {
       console.error('Failed to parse JSON:', response.content);
       // Попытка извлечь JSON из текста
       const jsonMatch = response.content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        generatedData = JSON.parse(jsonMatch[0]);
+        generatedData = parseJsonFromLLM(jsonMatch[0]);
       } else {
         throw new Error('Failed to parse generated content as JSON');
       }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { llm } from '@/lib/llm';
+import { llm, parseJsonFromLLM } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest, estimateTokens } from '@/lib/credits';
 import { prisma } from '@/lib/prisma';
 import { NPC_PROMPT, SYSTEM_PROMPT } from '@/lib/prompts';
@@ -83,17 +83,7 @@ ${context || 'Создайте интересного персонажа для 
     
     let npcData;
     try {
-      // Очищаем от markdown блоков
-      let cleanedContent = response.content.trim();
-      if (cleanedContent.includes('```json')) {
-        cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
-      }
-      if (cleanedContent.includes('```')) {
-        cleanedContent = cleanedContent.replace(/^```\n?/g, '').replace(/```\n?$/g, '');
-      }
-      
-      console.log('[NPC] Cleaned content:', cleanedContent);
-      npcData = JSON.parse(cleanedContent);
+      npcData = parseJsonFromLLM(response.content);
       console.log('[NPC] Parsed NPC data:', npcData);
     } catch (e) {
       console.error('[NPC] Failed to parse JSON:', e);

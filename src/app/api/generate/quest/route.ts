@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateContent } from '@/lib/llm';
+import { generateContent, parseJsonFromLLM } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
 import { QUEST_GENERATOR_PROMPT, SYSTEM_PROMPT } from '@/lib/prompts';
 import { prisma } from '@/lib/prisma';
@@ -105,12 +105,12 @@ export async function POST(request: NextRequest) {
     // Парсинг JSON
     let questData: any;
     try {
-      questData = JSON.parse(response.content);
+      questData = parseJsonFromLLM(response.content);
     } catch (parseError) {
       console.error('Failed to parse JSON:', response.content);
       const jsonMatch = response.content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        questData = JSON.parse(jsonMatch[0]);
+        questData = parseJsonFromLLM(jsonMatch[0]);
       } else {
         throw new Error('Failed to parse generated quest as JSON');
       }

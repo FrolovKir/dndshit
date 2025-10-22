@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { llm } from '@/lib/llm';
+import { llm, parseJsonFromLLM } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest, estimateTokens } from '@/lib/credits';
 import { prisma } from '@/lib/prisma';
 import { CAMPAIGN_SCENES_V2_PROMPT, SYSTEM_PROMPT } from '@/lib/prompts';
@@ -76,18 +76,8 @@ export async function POST(request: NextRequest) {
     // Парсим JSON ответ
     let scenesData;
     try {
-      let jsonContent = response.content.trim();
-      
-      if (jsonContent.startsWith('```json')) {
-        jsonContent = jsonContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (jsonContent.startsWith('```')) {
-        jsonContent = jsonContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      }
-      
-      scenesData = JSON.parse(jsonContent);
-      
+      scenesData = parseJsonFromLLM(response.content);
       console.log('Parsed scenes count:', scenesData.scenes?.length || 0);
-      
     } catch (e) {
       console.error('JSON Parse Error:', e);
       
