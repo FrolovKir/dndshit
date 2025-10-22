@@ -3,8 +3,7 @@ import { generateContent } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
 import { QUEST_GENERATOR_PROMPT, SYSTEM_PROMPT } from '@/lib/prompts';
 import { prisma } from '@/lib/prisma';
-
-const DEMO_USER_ID = 'demo-user-001';
+import { getUserIdFromRequest } from '@/lib/auth';
 
 interface QuestGenerationRequest {
   projectId: string;
@@ -15,7 +14,10 @@ interface QuestGenerationRequest {
 }
 
 export async function POST(request: NextRequest) {
+  let userId = '';
+  
   try {
+    userId = getUserIdFromRequest(request);
     const body = (await request.json()) as QuestGenerationRequest;
     const { projectId, questType, difficulty, context, partyLevel } = body;
 
@@ -57,7 +59,7 @@ export async function POST(request: NextRequest) {
     const estimatedTokens = 2000;
 
     // Проверка кредитов
-    const creditCheck = await checkCredits(DEMO_USER_ID, estimatedTokens);
+    const creditCheck = await checkCredits(userId, estimatedTokens);
     if (!creditCheck.allowed) {
       return NextResponse.json(
         {
@@ -162,10 +164,10 @@ export async function POST(request: NextRequest) {
     console.log('Title:', quest.title);
 
     // Вычитание токенов
-    await deductCredits(DEMO_USER_ID, response.usage);
+    await deductCredits(userId, response.usage);
 
     // Логирование
-    await logRequest(DEMO_USER_ID, 'quest_generation', response.usage, response.model, true);
+    await logRequest(userId, 'quest_generation', response.usage, response.model, true);
 
     return NextResponse.json({
       success: true,
@@ -177,17 +179,20 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Quest generation error:', error);
 
-    try {
-      await logRequest(
-        DEMO_USER_ID,
-        'quest_generation',
-        { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        'unknown',
-        false,
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
+    // Логируем ошибку, если userId был получен
+    if (userId) {
+      try {
+        await logRequest(
+          userId,
+          'quest_generation',
+          { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          'unknown',
+          false,
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      } catch (logError) {
+        console.error('Failed to log error:', logError);
+      }
     }
 
     return NextResponse.json(

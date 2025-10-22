@@ -12,8 +12,7 @@ import {
   QUICK_DIALOGUE_PROMPT,
   SYSTEM_PROMPT,
 } from '@/lib/prompts';
-
-const DEMO_USER_ID = 'demo-user-001';
+import { getUserIdFromRequest } from '@/lib/auth';
 
 // Типы быстрой генерации
 type QuickGenerationType =
@@ -27,7 +26,10 @@ type QuickGenerationType =
   | 'dialogue';
 
 export async function POST(request: NextRequest) {
+  let userId = '';
+  
   try {
+    userId = getUserIdFromRequest(request);
     const body = await request.json();
     const { type, params } = body as {
       type: QuickGenerationType;
@@ -42,7 +44,7 @@ export async function POST(request: NextRequest) {
     const estimatedTokens = 500; // Быстрая генерация обычно 300-700 токенов
 
     // Проверка кредитов
-    const creditCheck = await checkCredits(DEMO_USER_ID, estimatedTokens);
+    const creditCheck = await checkCredits(userId, estimatedTokens);
     if (!creditCheck.allowed) {
       return NextResponse.json(
         {
@@ -107,10 +109,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Вычитание токенов
-    await deductCredits(DEMO_USER_ID, response.usage);
+    await deductCredits(userId, response.usage);
 
     // Логирование
-    await logRequest(DEMO_USER_ID, `quick_${type}`, response.usage, response.model, true);
+    await logRequest(userId, `quick_${type}`, response.usage, response.model, true);
 
     return NextResponse.json({
       success: true,
@@ -122,18 +124,20 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Quick generation error:', error);
     
-    // Попытка залогировать ошибку
-    try {
-      await logRequest(
-        DEMO_USER_ID,
-        'quick_generation',
-        { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        'unknown',
-        false,
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
+    // Логируем ошибку, если userId был получен
+    if (userId) {
+      try {
+        await logRequest(
+          userId,
+          'quick_generation',
+          { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          'unknown',
+          false,
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      } catch (logError) {
+        console.error('Failed to log error:', logError);
+      }
     }
 
     return NextResponse.json(
