@@ -1,8 +1,5 @@
 {
-  "buildCommand": "prisma migrate deploy && prisma generate && next build",
-  "env": {
-    "PRISMA_QUERY_ENGINE_LIBRARY": "/vercel/.prisma/query-engine-rhel-openssl-3.0.x.so.node",
-    "PRISMA_CLI_QUERY_ENGINE_TYPE": "library"
-  }
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install"
 }
-
