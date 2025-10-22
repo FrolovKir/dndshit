@@ -663,6 +663,99 @@ ${params.mood ? `Настроение: ${params.mood}` : ''}
   "voice_note": "Как говорит (тихо/громко, акцент, манера)"
 }`;
 
+/**
+ * Генератор слухов и сплетен
+ */
+export const QUICK_RUMOR_PROMPT = (params: {
+  location?: string;
+  topic?: string;
+}) => `Создай ИНТЕРЕСНЫЙ СЛУХ для D&D 5e.
+
+${params.location ? `Локация: ${params.location}` : ''}
+${params.topic ? `Тема: ${params.topic}` : ''}
+
+Создай слух, который может услышать партия в таверне, на рынке или от случайного прохожего. Слух должен быть интригующим и потенциально полезным.
+
+Верни ТОЛЬКО JSON:
+{
+  "rumor": "Текст слуха (1-2 предложения)",
+  "source": "Кто это рассказывает (тип персонажа)",
+  "reliability": "насколько достоверно (правда/полуправда/ложь/преувеличение)",
+  "context": "Дополнительная информация для мастера"
+}`;
+
+/**
+ * Генератор погодных явлений с игровыми эффектами
+ */
+export const QUICK_WEATHER_PROMPT = (params: {
+  season?: string;
+  region?: string;
+  intensity?: 'mild' | 'moderate' | 'severe' | 'extreme';
+}) => `Создай ПОГОДНОЕ ЯВЛЕНИЕ с игровыми эффектами для D&D 5e.
+
+${params.season ? `Сезон: ${params.season}` : ''}
+${params.region ? `Регион: ${params.region}` : ''}
+${params.intensity ? `Интенсивность: ${params.intensity}` : ''}
+
+Создай интересное погодное условие, которое влияет на игровой процесс - видимость, передвижение, боевые действия.
+
+Верни ТОЛЬКО JSON:
+{
+  "condition": "Название погодного явления",
+  "description": "Описание того, что видят и чувствуют персонажи (2-3 предложения)",
+  "game_effect": "Конкретный игровой эффект (штрафы к проверкам, дальность видимости, сложность местности)",
+  "duration": "Как долго продлится"
+}`;
+
+/**
+ * Генератор дорожных встреч
+ */
+export const QUICK_ROAD_ENCOUNTER_PROMPT = (params: {
+  roadType?: 'main_road' | 'country_path' | 'forest_trail' | 'mountain_pass';
+  timeOfDay?: 'morning' | 'day' | 'evening' | 'night';
+  region?: string;
+}) => `Создай ДОРОЖНУЮ ВСТРЕЧУ для D&D 5e.
+
+${params.roadType ? `Тип дороги: ${params.roadType}` : ''}
+${params.timeOfDay ? `Время: ${params.timeOfDay}` : ''}
+${params.region ? `Регион: ${params.region}` : ''}
+
+Создай интересную встречу на дороге - не обязательно боевую. Может быть торговец, путешественник, странное явление, или что-то ещё.
+
+Верни ТОЛЬКО JSON:
+{
+  "title": "Название встречи",
+  "description": "Что видят персонажи при приближении (2-3 предложения)",
+  "participants": ["кто участвует в встрече"],
+  "peaceful_resolution": "Как может пройти мирно",
+  "conflict_outcome": "Что будет при конфликте"
+}`;
+
+/**
+ * Генератор болезней и проклятий
+ */
+export const QUICK_AFFLICTION_PROMPT = (params: {
+  type?: 'disease' | 'curse' | 'poison' | 'madness';
+  severity?: 'minor' | 'moderate' | 'severe';
+  source?: string;
+}) => `Создай БОЛЕЗНЬ/ПРОКЛЯТИЕ для D&D 5e.
+
+${params.type ? `Тип: ${params.type}` : ''}
+${params.severity ? `Тяжесть: ${params.severity}` : ''}
+${params.source ? `Источник: ${params.source}` : ''}
+
+Создай интересный недуг с симптомами и способом лечения. Должно быть игровым препятствием, но не смертельным.
+
+Верни ТОЛЬКО JSON:
+{
+  "name": "Название болезни/проклятия",
+  "type": "disease|curse|poison|madness",
+  "description": "Описание недуга и его происхождения (2-3 предложения)",
+  "symptoms": ["симптом 1", "симптом 2", "симптом 3"],
+  "cure": "Как можно вылечить или снять",
+  "duration": "Как долго длится без лечения"
+}`;
+
 // ===== ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ (DALL-E 3) =====
 
 /**

@@ -10,6 +10,10 @@ import {
   QUICK_COMPLICATION_PROMPT,
   QUICK_TWIST_PROMPT,
   QUICK_DIALOGUE_PROMPT,
+  QUICK_RUMOR_PROMPT,
+  QUICK_WEATHER_PROMPT,
+  QUICK_ROAD_ENCOUNTER_PROMPT,
+  QUICK_AFFLICTION_PROMPT,
   SYSTEM_PROMPT,
 } from '@/lib/prompts';
 import { getUserIdFromRequest } from '@/lib/auth';
@@ -23,11 +27,15 @@ type QuickGenerationType =
   | 'location'
   | 'complication'
   | 'twist'
-  | 'dialogue';
+  | 'dialogue'
+  | 'rumor'
+  | 'weather'
+  | 'road_encounter'
+  | 'affliction';
 
 export async function POST(request: NextRequest) {
   let userId = '';
-  
+
   try {
     userId = getUserIdFromRequest(request);
     const body = await request.json();
@@ -83,6 +91,18 @@ export async function POST(request: NextRequest) {
       case 'dialogue':
         prompt = QUICK_DIALOGUE_PROMPT(params as any);
         break;
+      case 'rumor':
+        prompt = QUICK_RUMOR_PROMPT(params as any);
+        break;
+      case 'weather':
+        prompt = QUICK_WEATHER_PROMPT(params as any);
+        break;
+      case 'road_encounter':
+        prompt = QUICK_ROAD_ENCOUNTER_PROMPT(params as any);
+        break;
+      case 'affliction':
+        prompt = QUICK_AFFLICTION_PROMPT(params as any);
+        break;
       default:
         return NextResponse.json({ error: 'Invalid generation type' }, { status: 400 });
     }
@@ -123,7 +143,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Quick generation error:', error);
-    
+
     // Логируем ошибку, если userId был получен
     if (userId) {
       try {
