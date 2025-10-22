@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { llm } from '@/lib/llm';
+import { llm, parseJsonFromLLM } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest, estimateTokens } from '@/lib/credits';
 import { prisma } from '@/lib/prisma';
 import { SCENE_PROMPT, SYSTEM_PROMPT } from '@/lib/prompts';
@@ -80,17 +80,7 @@ ${previousScenes ? `\nПредыдущие события: ${previousScenes}` : 
     
     let sceneData;
     try {
-      // Очищаем от markdown блоков
-      let cleanedContent = response.content.trim();
-      if (cleanedContent.includes('```json')) {
-        cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
-      }
-      if (cleanedContent.includes('```')) {
-        cleanedContent = cleanedContent.replace(/^```\n?/g, '').replace(/```\n?$/g, '');
-      }
-      
-      console.log('[SCENE] Cleaned content:', cleanedContent);
-      sceneData = JSON.parse(cleanedContent);
+      sceneData = parseJsonFromLLM(response.content);
       console.log('[SCENE] Parsed scene data:', sceneData);
     } catch (e) {
       console.error('[SCENE] Failed to parse JSON:', e);

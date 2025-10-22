@@ -574,3 +574,19 @@ export async function generateContent(
   };
 }
 
+/**
+ * Парсит JSON из ответа LLM, удаляя markdown блоки кода
+ */
+export function parseJsonFromLLM<T = any>(content: string): T {
+  let cleanedContent = content.trim();
+  
+  if (cleanedContent.includes('```json')) {
+    cleanedContent = cleanedContent.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
+  }
+  if (cleanedContent.includes('```')) {
+    cleanedContent = cleanedContent.replace(/^```\n?/g, '').replace(/```\n?$/g, '');
+  }
+  
+  return JSON.parse(cleanedContent);
+}
+

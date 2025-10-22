@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateContent } from '@/lib/llm';
+import { generateContent, parseJsonFromLLM } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
 import {
   IMAGE_CHARACTER_PROMPT,
@@ -129,12 +129,12 @@ export async function POST(request: NextRequest) {
     // Парсинг промпта
     let promptData: { prompt: string; size: string; style: string };
     try {
-      promptData = JSON.parse(promptResponse.content);
+      promptData = parseJsonFromLLM(promptResponse.content);
     } catch (parseError) {
       console.error('Failed to parse prompt JSON:', promptResponse.content);
       const jsonMatch = promptResponse.content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        promptData = JSON.parse(jsonMatch[0]);
+        promptData = parseJsonFromLLM(jsonMatch[0]);
       } else {
         throw new Error('Failed to parse generated prompt as JSON');
       }
