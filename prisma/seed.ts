@@ -39,6 +39,20 @@ async function main() {
 
   console.log('✅ Demo-пользователь создан:', demoUser.name);
 
+  // Создаем bestmaster пользователя
+  const bestmasterUser = await prisma.user.upsert({
+    where: { username: 'bestmaster' },
+    update: {},
+    create: {
+      username: 'bestmaster',
+      password: hashPassword('bestmaster123'), // Замените на нужный пароль
+      name: 'Best Master',
+      email: 'bestmaster@dndgenlab.com',
+    },
+  });
+
+  console.log('✅ Bestmaster пользователь создан:', bestmasterUser.name);
+
   // Создаем бюджет токенов для администратора
   const adminCreditBudget = await prisma.creditBudget.upsert({
     where: { userId: adminUser.id },
@@ -68,6 +82,21 @@ async function main() {
   });
 
   console.log('✅ Бюджет токенов для demo создан:', creditBudget.tier, '-', creditBudget.totalTokens, 'токенов');
+
+  // Создаем бюджет токенов для bestmaster
+  const bestmasterCreditBudget = await prisma.creditBudget.upsert({
+    where: { userId: bestmasterUser.id },
+    update: {},
+    create: {
+      userId: bestmasterUser.id,
+      tier: 'pro',
+      totalTokens: 500000,
+      usedTokens: 0,
+      resetAt: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+    },
+  });
+
+  console.log('✅ Бюджет токенов для bestmaster создан:', bestmasterCreditBudget.tier, '-', bestmasterCreditBudget.totalTokens, 'токенов');
 
   // Создаем демо-проект
   const demoProject = await prisma.project.create({
