@@ -15,14 +15,47 @@ npm install
 
 ### 2. Настройте базу данных
 
+#### Вариант A: SQLite (для локальной разработки)
+
+1. Измените в `prisma/schema.prisma`:
+```prisma
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+```
+
+2. Выполните настройку:
 ```bash
-# PostgreSQL (локально)
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
+
+#### Вариант B: PostgreSQL (локально)
+
+```bash
 # 1) Создайте БД dndgenlab в Postgres
 # 2) Установите переменную окружения DATABASE_URL, например:
 #    postgresql://postgres:password@localhost:5432/dndgenlab?schema=public
 # 3) Выполните миграции и сиды:
 npm run db:generate
 npm run db:migrate:dev
+npm run db:seed
+```
+
+#### Вариант C: Prisma Cloud (для продакшена)
+
+1. Создайте проект на [console.prisma.io](https://console.prisma.io)
+2. Получите Accelerate URL из дашборда
+3. Установите в `.env`:
+```bash
+DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=YOUR_API_KEY"
+```
+4. Выполните:
+```bash
+npm run db:generate
+npm run db:push
 npm run db:seed
 ```
 
