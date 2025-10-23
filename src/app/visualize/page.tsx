@@ -400,7 +400,7 @@ export default function VisualizePage() {
           </Button>
 
           <p className="text-xs text-gray-500 text-center">
-            Использует DALL-E 3 • Требует OPENAI_API_KEY
+            Использует GPT-4o image generation • Требует OPENAI_API_KEY
           </p>
         </div>
       </Card>

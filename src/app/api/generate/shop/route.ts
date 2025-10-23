@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
+import { getUserIdFromRequest } from '@/lib/auth';
 import { SYSTEM_PROMPT } from '@/lib/prompts';
-
-const DEMO_USER_ID = process.env.DEMO_USER_ID || 'demo-user-001';
 
 interface ShopGenerationParams {
   shopType: 'general' | 'weapons' | 'armor' | 'magic' | 'alchemy' | 'tavern' | 'blacksmith' | 'temple';
@@ -13,7 +12,10 @@ interface ShopGenerationParams {
 }
 
 export async function POST(request: NextRequest) {
+  let userId: string | undefined;
   try {
+    userId = getUserIdFromRequest(request);
+
     const body = (await request.json()) as ShopGenerationParams;
     const { shopType, settlement, wealth, specialty } = body;
 
@@ -28,7 +30,7 @@ export async function POST(request: NextRequest) {
     const estimatedTokens = 1500;
 
     // Проверка кредитов
-    const creditCheck = await checkCredits(DEMO_USER_ID, estimatedTokens);
+    const creditCheck = await checkCredits(userId, estimatedTokens);
     if (!creditCheck.allowed) {
       return NextResponse.json(
         {
@@ -64,11 +66,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Вычитание токенов
-    await deductCredits(DEMO_USER_ID, response.usage);
+    await deductCredits(userId, response.usage);
 
     // Логирование
     await logRequest(
-      DEMO_USER_ID,
+      userId,
       'shop_generation',
       response.usage,
       'gpt-4o-mini',
@@ -85,17 +87,19 @@ export async function POST(request: NextRequest) {
     console.error('Shop generation error:', error);
 
     // Логирование ошибки
-    try {
-      await logRequest(
-        DEMO_USER_ID,
-        'shop_generation',
-        { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        'gpt-4o-mini',
-        false,
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
+    if (userId) {
+      try {
+        await logRequest(
+          userId,
+          'shop_generation',
+          { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          'gpt-4o-mini',
+          false,
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      } catch (logError) {
+        console.error('Failed to log error:', logError);
+      }
     }
 
     return NextResponse.json(

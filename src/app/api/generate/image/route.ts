@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
+import { getUserIdFromRequest } from '@/lib/auth';
 import {
   IMAGE_CHARACTER_PROMPT,
   IMAGE_LOCATION_PROMPT,
@@ -8,8 +9,6 @@ import {
   IMAGE_SCENE_PROMPT,
   SYSTEM_PROMPT,
 } from '@/lib/prompts';
-
-const DEMO_USER_ID = process.env.DEMO_USER_ID || 'demo-user-001';
 
 type ImageType = 'character' | 'location' | 'item' | 'scene';
 
@@ -38,7 +37,10 @@ interface ImageGenerationParams {
 }
 
 export async function POST(request: NextRequest) {
+  let userId: string | undefined;
   try {
+    userId = getUserIdFromRequest(request);
+
     const body = (await request.json()) as ImageGenerationParams;
     const { type, description, ...params } = body;
 
@@ -49,25 +51,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Проверка наличия OpenAI API ключа (DALL-E доступен только через OpenAI)
+    // Проверка наличия OpenAI API ключа
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) {
       return NextResponse.json(
         {
-          error: 'DALL-E 3 requires OpenAI API key',
+          error: 'GPT-4o image generation requires OpenAI API key',
           message: 'Установите OPENAI_API_KEY в .env файле для генерации изображений',
         },
         { status: 503 }
       );
     }
 
-    // Оценка токенов (промпт генерация + DALL-E стоит дороже)
-    // DALL-E 3: 1024x1024 = ~$0.040, 1792x1024 = ~$0.080
-    // Мы учитываем это как токены для упрощения
+    // Оценка токенов (промпт генерация + GPT-4o image generation)
     const estimatedTokens = type === 'location' || type === 'scene' ? 2000 : 1000;
 
     // Проверка кредитов
-    const creditCheck = await checkCredits(DEMO_USER_ID, estimatedTokens);
+    const creditCheck = await checkCredits(userId, estimatedTokens);
     if (!creditCheck.allowed) {
       return NextResponse.json(
         {
@@ -140,56 +140,56 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log('=== Generated DALL-E Prompt ===');
+    console.log('=== Generated Image Prompt ===');
     console.log(promptData.prompt);
     console.log('Size:', promptData.size);
 
-    // Шаг 2: Генерация изображения через DALL-E 3
-    const dalleResponse = await fetch('https://api.openai.com/v1/images/generations', {
+    // Шаг 2: Генерация изображения через GPT-4o
+    const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: 'gpt-4o',
         prompt: promptData.prompt,
         n: 1,
         size: promptData.size,
-        quality: 'standard', // или 'hd' для лучшего качества (дороже)
+        quality: 'standard',
         style: promptData.style === 'realistic' ? 'natural' : 'vivid',
       }),
     });
 
-    if (!dalleResponse.ok) {
-      const error = await dalleResponse.json();
-      console.error('DALL-E API error:', error);
-      throw new Error(`DALL-E API error: ${error.error?.message || 'Unknown error'}`);
+    if (!imageResponse.ok) {
+      const error = await imageResponse.json();
+      console.error('Image generation API error:', error);
+      throw new Error(`Image generation API error: ${error.error?.message || 'Unknown error'}`);
     }
 
-    const dalleData = await dalleResponse.json();
-    const temporaryImageUrl = dalleData.data[0].url;
-    const revisedPrompt = dalleData.data[0].revised_prompt; // DALL-E может изменить промпт
+    const imageData = await imageResponse.json();
+    const temporaryImageUrl = imageData.data[0].url;
+    const revisedPrompt = imageData.data[0].revised_prompt;
 
-    console.log('=== DALL-E Response ===');
+    console.log('=== Image Generation Response ===');
     console.log('Temporary Image URL:', temporaryImageUrl);
     console.log('Revised prompt:', revisedPrompt);
 
     // Скачиваем изображение и конвертируем в data URL для постоянного хранения
-    const imageResponse = await fetch(temporaryImageUrl);
-    if (!imageResponse.ok) {
+    const downloadResponse = await fetch(temporaryImageUrl);
+    if (!downloadResponse.ok) {
       throw new Error('Failed to download generated image');
     }
 
-    const imageBuffer = await imageResponse.arrayBuffer();
+    const imageBuffer = await downloadResponse.arrayBuffer();
     const imageBase64 = Buffer.from(imageBuffer).toString('base64');
     const imageUrl = `data:image/png;base64,${imageBase64}`;
 
     console.log('Image converted to data URL for permanent storage');
 
-    // Вычитание токенов (промпт генерация + условная стоимость DALL-E)
+    // Вычитание токенов (промпт генерация + условная стоимость GPT-4o image generation)
     const totalTokens = promptResponse.usage.totalTokens + estimatedTokens;
-    await deductCredits(DEMO_USER_ID, {
+    await deductCredits(userId, {
       promptTokens: promptResponse.usage.promptTokens,
       completionTokens: promptResponse.usage.completionTokens + estimatedTokens,
       totalTokens,
@@ -197,14 +197,14 @@ export async function POST(request: NextRequest) {
 
     // Логирование
     await logRequest(
-      DEMO_USER_ID,
+      userId,
       `image_${type}`,
       {
         promptTokens: promptResponse.usage.promptTokens,
         completionTokens: promptResponse.usage.completionTokens + estimatedTokens,
         totalTokens,
       },
-      'dall-e-3',
+      'gpt-4o',
       true
     );
 
@@ -222,17 +222,19 @@ export async function POST(request: NextRequest) {
     console.error('Image generation error:', error);
 
     // Попытка залогировать ошибку
-    try {
-      await logRequest(
-        DEMO_USER_ID,
-        'image_generation',
-        { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        'dall-e-3',
-        false,
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
+    if (userId) {
+      try {
+        await logRequest(
+          userId,
+          'image_generation',
+          { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          'gpt-4o',
+          false,
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      } catch (logError) {
+        console.error('Failed to log error:', logError);
+      }
     }
 
     return NextResponse.json(

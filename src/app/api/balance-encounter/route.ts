@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
+import { getUserIdFromRequest } from '@/lib/auth';
 import { BALANCED_ENCOUNTER_PROMPT, SYSTEM_PROMPT } from '@/lib/prompts';
 import {
   calculateXPBudget,
@@ -10,8 +11,6 @@ import {
   CR_TO_XP,
   type Difficulty,
 } from '@/lib/encounter-balance';
-
-const DEMO_USER_ID = 'demo-user-001';
 
 interface BalanceRequest {
   partyLevel: number;
@@ -23,7 +22,10 @@ interface BalanceRequest {
 }
 
 export async function POST(request: NextRequest) {
+  let userId: string | undefined;
   try {
+    userId = getUserIdFromRequest(request);
+
     const body = (await request.json()) as BalanceRequest;
     const { partyLevel, partySize, difficulty, environment, context, generateDetails } = body;
 
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
       const estimatedTokens = 1500;
 
       // Проверка кредитов
-      const creditCheck = await checkCredits(DEMO_USER_ID, estimatedTokens);
+      const creditCheck = await checkCredits(userId, estimatedTokens);
       if (!creditCheck.allowed) {
         return NextResponse.json(
           {
@@ -114,11 +116,11 @@ export async function POST(request: NextRequest) {
       tokensUsed = response.usage.totalTokens;
 
       // Вычитание токенов
-      await deductCredits(DEMO_USER_ID, response.usage);
+      await deductCredits(userId, response.usage);
 
       // Логирование
       await logRequest(
-        DEMO_USER_ID,
+        userId,
         'balanced_encounter',
         response.usage,
         response.model,
@@ -139,17 +141,19 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Encounter balance error:', error);
 
-    try {
-      await logRequest(
-        DEMO_USER_ID,
-        'balanced_encounter',
-        { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        'unknown',
-        false,
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
+    if (userId) {
+      try {
+        await logRequest(
+          userId,
+          'balanced_encounter',
+          { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          'unknown',
+          false,
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      } catch (logError) {
+        console.error('Failed to log error:', logError);
+      }
     }
 
     return NextResponse.json(

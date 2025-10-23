@@ -19,13 +19,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'NPC not found' }, { status: 404 });
     }
 
-    // Формируем промпт для DALL-E
+    // Формируем промпт для GPT-4o image generation
     const prompt = `Fantasy RPG character portrait: ${npc.name}, ${npc.race} ${npc.class}. ${npc.appearance || 'Detailed fantasy character'}. Professional digital art, highly detailed, fantasy art style, D&D character portrait.`;
 
     console.log('[PORTRAIT] Generating image for:', npc.name);
     console.log('[PORTRAIT] Prompt:', prompt);
 
-    // Вызываем OpenAI DALL-E API
+    // Вызываем OpenAI GPT-4o image generation API
     const openaiKey = process.env.OPENAI_API_KEY;
     if (!openaiKey) {
       return NextResponse.json(
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         'Authorization': `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
+        model: 'gpt-4o',
         prompt: prompt,
         n: 1,
         size: '1024x1024',
