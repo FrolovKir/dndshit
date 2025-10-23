@@ -68,6 +68,8 @@ class MockLLMAdapter implements LLMAdapter {
       content = this.generateMockTwist();
     } else if (lastMessage.content.includes('РЕПЛИКУ')) {
       content = this.generateMockDialogue();
+    } else if (lastMessage.content.includes('DALL-E') || lastMessage.content.includes('промпт для генерации')) {
+      content = this.generateMockImagePrompt();
     } else {
       content = 'Mock response from LLM adapter. Replace with real implementation.';
     }
@@ -505,6 +507,14 @@ class MockLLMAdapter implements LLMAdapter {
       ],
       body_language: 'Протирает стакан круговыми движениями, не отрывая взгляда от посетителей',
       voice_note: 'Говорит с лёгким хрипом, голос низкий и немного усталый',
+    }, null, 2);
+  }
+
+  private generateMockImagePrompt(): string {
+    return JSON.stringify({
+      prompt: 'A dramatic fantasy battle scene in D&D style, featuring heroic adventurers fighting against fearsome monsters in a dark dungeon, epic lighting, cinematic composition, detailed characters and environment',
+      size: '1024x1024',
+      style: 'fantasy_art',
     }, null, 2);
   }
 }
