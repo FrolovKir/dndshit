@@ -44,6 +44,8 @@ class MockLLMAdapter implements LLMAdapter {
     
     if (lastMessage.content.includes('session') || lastMessage.content.includes('campaign') || lastMessage.content.includes('БАЗОВОЕ ОПИСАНИЕ')) {
       content = this.generateMockSession();
+    } else if ((lastMessage.content.includes('scene') || lastMessage.content.includes('СЦЕН')) && (lastMessage.content.includes('NPC') || lastMessage.content.includes('ДЕТАЛЬНЫХ NPC'))) {
+      content = this.generateMockSceneNPCs();
     } else if (lastMessage.content.includes('scene') || lastMessage.content.includes('СЦЕН')) {
       content = this.generateMockScene();
     } else if (lastMessage.content.includes('NPC') || lastMessage.content.includes('ПЕРСОНАЖ')) {
@@ -283,6 +285,92 @@ class MockLLMAdapter implements LLMAdapter {
         CHA: 12,
       },
       equipment: ['Боевой молот +1', 'Щит с гербом клана', 'Святой символ Моради'],
+    }, null, 2);
+  }
+
+  private generateMockSceneNPCs(): string {
+    return JSON.stringify({
+      scene_id: 1,
+      npcs: [
+        {
+          name: 'Элара Лунный Свет',
+          race: 'Высший эльф',
+          class: 'Волшебник',
+          level: 4,
+          alignment: 'Neutral Good',
+          appearance: 'Изящная эльфийка с серебристыми волосами и проницательными фиолетовыми глазами. Носит синюю мантию, расшитую звездами.',
+          personality: 'Любознательна и осторожна. Говорит загадками и любит наблюдать за людьми прежде чем доверять им.',
+          backstory: 'Исследовательница древних магических артефактов. Прибыла в эти места в поисках утраченных знаний.',
+          motivations: 'Найти древний магический фолиант, который, по слухам, спрятан в этих руинах',
+          role_in_scene: 'информатор',
+          hidden_agenda: 'На самом деле работает на тайную организацию магов и ищет артефакт для них',
+          stats: {
+            STR: 8,
+            DEX: 14,
+            CON: 12,
+            INT: 18,
+            WIS: 13,
+            CHA: 10,
+          },
+          interaction_options: {
+            if_players_fight: 'Попытается телепортироваться прочь, но может оставить ценную подсказку',
+            if_players_negotiate: 'Поделится информацией о локации в обмен на помощь в поисках',
+            if_players_ignore: 'Будет следовать за группой издалека, наблюдая за их действиями',
+          },
+        },
+        {
+          name: 'Громбар Железный Кулак',
+          race: 'Горный дварф',
+          class: 'Воин',
+          level: 5,
+          alignment: 'Lawful Neutral',
+          appearance: 'Массивный дварф с шрамом через левый глаз. Носит потрепанную кольчугу и большой боевой топор.',
+          personality: 'Прямолинеен и недоверчив. Ценит силу и честность. Не любит магию и тех, кто ее использует.',
+          backstory: 'Бывший наемник, потерявший отряд в этих руинах год назад. Вернулся, чтобы найти их останки.',
+          motivations: 'Отомстить существам, убившим его товарищей, и вернуть их оружие',
+          role_in_scene: 'гид',
+          hidden_agenda: 'Знает о ловушках в руинах, но не расскажет о них, пока не убедится в надежности группы',
+          stats: {
+            STR: 18,
+            DEX: 10,
+            CON: 16,
+            INT: 8,
+            WIS: 12,
+            CHA: 9,
+          },
+          interaction_options: {
+            if_players_fight: 'Будет сражаться до последнего, но уважает достойных противников',
+            if_players_negotiate: 'Согласится помочь, если группа поклянется помочь ему отомстить',
+            if_players_ignore: 'Пойдет своим путем, но может случайно активировать ловушку, предупредив группу',
+          },
+        },
+        {
+          name: 'Тень (настоящее имя неизвестно)',
+          race: 'Полуэльф',
+          class: 'Плут',
+          level: 3,
+          alignment: 'Chaotic Neutral',
+          appearance: 'Худощавый полуэльф в темном плаще с капюшоном. Лицо скрыто, видны только острые зеленые глаза.',
+          personality: 'Скрытный и саркастичный. Говорит мало, но метко. Не доверяет никому.',
+          backstory: 'Вор и контрабандист, использующий руины как тайник для краденого. Не хочет, чтобы кто-то узнал об этом месте.',
+          motivations: 'Защитить свой тайник и избавиться от незваных гостей',
+          role_in_scene: 'мешает',
+          hidden_agenda: 'Спрятал в руинах украденную корону, за которую назначена большая награда',
+          stats: {
+            STR: 10,
+            DEX: 18,
+            CON: 12,
+            INT: 14,
+            WIS: 11,
+            CHA: 13,
+          },
+          interaction_options: {
+            if_players_fight: 'Попытается скрыться в тенях и сбежать, возможно устроив засаду позже',
+            if_players_negotiate: 'Может заключить сделку, если группа пообещает не трогать его тайник',
+            if_players_ignore: 'Будет красть у группы мелкие предметы и подбрасывать ложные улики',
+          },
+        },
+      ],
     }, null, 2);
   }
 
