@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent } from '@/lib/llm';
 import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
+import { getUserIdFromRequest } from '@/lib/auth';
 import {
   IMAGE_CHARACTER_PROMPT,
   IMAGE_LOCATION_PROMPT,
@@ -8,8 +9,6 @@ import {
   IMAGE_SCENE_PROMPT,
   SYSTEM_PROMPT,
 } from '@/lib/prompts';
-
-const DEMO_USER_ID = process.env.DEMO_USER_ID || 'demo-user-001';
 
 type ImageType = 'character' | 'location' | 'item' | 'scene';
 
@@ -38,7 +37,10 @@ interface ImageGenerationParams {
 }
 
 export async function POST(request: NextRequest) {
+  let userId: string | undefined;
   try {
+    userId = getUserIdFromRequest(request);
+
     const body = (await request.json()) as ImageGenerationParams;
     const { type, description, ...params } = body;
 
@@ -67,7 +69,7 @@ export async function POST(request: NextRequest) {
     const estimatedTokens = type === 'location' || type === 'scene' ? 2000 : 1000;
 
     // Проверка кредитов
-    const creditCheck = await checkCredits(DEMO_USER_ID, estimatedTokens);
+    const creditCheck = await checkCredits(userId, estimatedTokens);
     if (!creditCheck.allowed) {
       return NextResponse.json(
         {
@@ -189,7 +191,7 @@ export async function POST(request: NextRequest) {
 
     // Вычитание токенов (промпт генерация + условная стоимость DALL-E)
     const totalTokens = promptResponse.usage.totalTokens + estimatedTokens;
-    await deductCredits(DEMO_USER_ID, {
+    await deductCredits(userId, {
       promptTokens: promptResponse.usage.promptTokens,
       completionTokens: promptResponse.usage.completionTokens + estimatedTokens,
       totalTokens,
@@ -197,7 +199,7 @@ export async function POST(request: NextRequest) {
 
     // Логирование
     await logRequest(
-      DEMO_USER_ID,
+      userId,
       `image_${type}`,
       {
         promptTokens: promptResponse.usage.promptTokens,
@@ -222,17 +224,19 @@ export async function POST(request: NextRequest) {
     console.error('Image generation error:', error);
 
     // Попытка залогировать ошибку
-    try {
-      await logRequest(
-        DEMO_USER_ID,
-        'image_generation',
-        { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        'dall-e-3',
-        false,
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
+    if (userId) {
+      try {
+        await logRequest(
+          userId,
+          'image_generation',
+          { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          'dall-e-3',
+          false,
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      } catch (logError) {
+        console.error('Failed to log error:', logError);
+      }
     }
 
     return NextResponse.json(
