@@ -800,7 +800,7 @@ ${params.source ? `Источник: ${params.source}` : ''}
   "duration": "Как долго длится без лечения"
 }`;
 
-// ===== ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ (DALL-E 3) =====
+// ===== ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЙ (GPT-4o) =====
 
 /**
  * Генерация промпта для изображения персонажа
@@ -812,7 +812,7 @@ export const IMAGE_CHARACTER_PROMPT = (params: {
   age?: string;
   style?: 'realistic' | 'fantasy_art' | 'concept_art' | 'token' | 'painting' | 'comic';
   mood?: string;
-}) => `Ты — эксперт по созданию промптов для DALL-E 3. Твоя задача — создать качественный английский промпт для генерации ПОРТРЕТА персонажа D&D.
+}) => `Ты — эксперт по созданию промптов для GPT-4o image generation. Твоя задача — создать качественный английский промпт для генерации ПОРТРЕТА персонажа D&D.
 
 ОПИСАНИЕ ОТ МАСТЕРА:
 ${params.description}
@@ -824,7 +824,7 @@ ${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
 ${params.mood ? `Настроение: ${params.mood}` : ''}
 
 ТРЕБОВАНИЯ:
-- Создай детальный промпт на английском для DALL-E 3
+- Создай детальный промпт на английском для GPT-4o image generation
 - Портретная ориентация (portrait)
 - Фокус на лице и верхней части тела
 - Добавь детали стиля D&D фэнтези
@@ -842,7 +842,7 @@ ${params.mood ? `Настроение: ${params.mood}` : ''}
 
 Верни ТОЛЬКО JSON:
 {
-  "prompt": "детальный английский промпт для DALL-E 3",
+  "prompt": "детальный английский промпт для GPT-4o image generation",
   "size": "1024x1024",
   "style": "${params.style || 'fantasy_art'}"
 }`;
@@ -857,7 +857,7 @@ export const IMAGE_LOCATION_PROMPT = (params: {
   weather?: 'clear' | 'fog' | 'rain' | 'snow' | 'storm';
   style?: 'realistic' | 'fantasy_art' | 'concept_art' | 'painting';
   atmosphere?: string;
-}) => `Ты — эксперт по созданию промптов для DALL-E 3. Твоя задача — создать качественный английский промпт для генерации ЛОКАЦИИ/ПЕЙЗАЖА для D&D.
+}) => `Ты — эксперт по созданию промптов для GPT-4o image generation. Твоя задача — создать качественный английский промпт для генерации ЛОКАЦИИ/ПЕЙЗАЖА для D&D.
 
 ОПИСАНИЕ ОТ МАСТЕРА:
 ${params.description}
@@ -869,7 +869,7 @@ ${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
 ${params.atmosphere ? `Атмосфера: ${params.atmosphere}` : ''}
 
 ТРЕБОВАНИЯ:
-- Создай детальный промпт на английском для DALL-E 3
+- Создай детальный промпт на английском для GPT-4o image generation
 - Широкоформатная ориентация (landscape)
 - Атмосферная сцена с деталями окружения
 - Стиль D&D фэнтези
@@ -892,7 +892,7 @@ ${params.atmosphere ? `Атмосфера: ${params.atmosphere}` : ''}
 
 Верни ТОЛЬКО JSON:
 {
-  "prompt": "детальный английский промпт для DALL-E 3",
+  "prompt": "детальный английский промпт для GPT-4o image generation",
   "size": "1792x1024",
   "style": "${params.style || 'fantasy_art'}"
 }`;
@@ -906,7 +906,7 @@ export const IMAGE_ITEM_PROMPT = (params: {
   rarity?: 'common' | 'uncommon' | 'rare' | 'legendary';
   style?: 'realistic' | 'fantasy_art' | 'icon' | 'painting';
   magicalEffect?: string;
-}) => `Ты — эксперт по созданию промптов для DALL-E 3. Твоя задача — создать качественный английский промпт для генерации ПРЕДМЕТА/АРТЕФАКТА для D&D.
+}) => `Ты — эксперт по созданию промптов для GPT-4o image generation. Твоя задача — создать качественный английский промпт для генерации ПРЕДМЕТА/АРТЕФАКТА для D&D.
 
 ОПИСАНИЕ ОТ МАСТЕРА:
 ${params.description}
@@ -917,7 +917,7 @@ ${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
 ${params.magicalEffect ? `Магический эффект: ${params.magicalEffect}` : ''}
 
 ТРЕБОВАНИЯ:
-- Создай детальный промпт на английском для DALL-E 3
+- Создай детальный промпт на английском для GPT-4o image generation
 - Квадратная ориентация
 - Предмет на нейтральном/подходящем фоне
 - Детализация материалов и текстур
@@ -933,7 +933,7 @@ ${params.magicalEffect ? `Магический эффект: ${params.magicalEff
 
 Верни ТОЛЬКО JSON:
 {
-  "prompt": "детальный английский промпт для DALL-E 3",
+  "prompt": "детальный английский промпт для GPT-4o image generation",
   "size": "1024x1024",
   "style": "${params.style || 'fantasy_art'}"
 }`;
@@ -946,7 +946,7 @@ export const IMAGE_SCENE_PROMPT = (params: {
   scale?: 'duel' | 'skirmish' | 'battle' | 'war';
   environment?: string;
   style?: 'realistic' | 'fantasy_art' | 'concept_art' | 'painting' | 'epic';
-}) => `Ты — эксперт по созданию промптов для DALL-E 3. Твоя задача — создать качественный английский промпт для генерации БОЕВОЙ СЦЕНЫ для D&D.
+}) => `Ты — эксперт по созданию промптов для GPT-4o image generation. Твоя задача — создать качественный английский промпт для генерации БОЕВОЙ СЦЕНЫ для D&D.
 
 ОПИСАНИЕ ОТ МАСТЕРА:
 ${params.description}
@@ -956,7 +956,7 @@ ${params.environment ? `Окружение: ${params.environment}` : ''}
 ${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
 
 ТРЕБОВАНИЯ:
-- Создай детальный промпт на английском для DALL-E 3
+- Создай детальный промпт на английском для GPT-4o image generation
 - Широкоформатная ориентация (landscape)
 - Динамичная композиция
 - Ощущение движения и экшена
@@ -977,7 +977,7 @@ ${params.style ? `Стиль: ${params.style}` : 'Стиль: fantasy_art'}
 
 Верни ТОЛЬКО JSON:
 {
-  "prompt": "детальный английский промпт для DALL-E 3",
+  "prompt": "детальный английский промпт для GPT-4o image generation",
   "size": "1792x1024",
   "style": "${params.style || 'fantasy_art'}"
 }`;
