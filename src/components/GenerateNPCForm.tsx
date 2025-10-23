@@ -45,29 +45,18 @@ export default function GenerateNPCForm({ projects, projectId, scenes }: Generat
     setSuccess(false);
 
     try {
-      let res: Response;
-      if (formData.sceneId) {
-        // Генерация NPC для конкретной сцены
-        res = await fetch('/api/generate/scene-npcs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sceneId: formData.sceneId }),
-        });
-      } else {
-        // Общая генерация NPC в рамках проекта
-        res = await fetch('/api/generate/npc', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            projectId: formData.projectId || projectId,
-            role: formData.role || undefined,
-            race: formData.race || undefined,
-            npcClass: formData.npcClass || undefined,
-            alignment: formData.alignment || undefined,
-            context: formData.context || undefined,
-          }),
-        });
-      }
+      const res = await fetch('/api/generate/npc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: formData.projectId || projectId,
+          role: formData.role || undefined,
+          race: formData.race || undefined,
+          npcClass: formData.npcClass || undefined,
+          alignment: formData.alignment || undefined,
+          context: formData.context || undefined,
+        }),
+      });
 
       const data = await res.json();
 
