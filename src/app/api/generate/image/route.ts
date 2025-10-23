@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateContent } from '@/lib/llm';
-import { checkCredits, deductCredits, logRequest } from '@/lib/credits';
 import {
   IMAGE_CHARACTER_PROMPT,
   IMAGE_LOCATION_PROMPT,
@@ -8,8 +7,6 @@ import {
   IMAGE_SCENE_PROMPT,
   SYSTEM_PROMPT,
 } from '@/lib/prompts';
-
-const DEMO_USER_ID = process.env.DEMO_USER_ID || 'demo-user-001';
 
 type ImageType = 'character' | 'location' | 'item' | 'scene';
 
@@ -63,21 +60,7 @@ export async function POST(request: NextRequest) {
 
     // Оценка токенов (промпт генерация + DALL-E стоит дороже)
     // DALL-E 3: 1024x1024 = ~$0.040, 1792x1024 = ~$0.080
-    // Мы учитываем это как токены для упрощения
     const estimatedTokens = type === 'location' || type === 'scene' ? 2000 : 1000;
-
-    // Проверка кредитов
-    const creditCheck = await checkCredits(DEMO_USER_ID, estimatedTokens);
-    if (!creditCheck.allowed) {
-      return NextResponse.json(
-        {
-          error: 'Insufficient credits',
-          message: creditCheck.message,
-          creditsRemaining: creditCheck.remaining,
-        },
-        { status: 402 }
-      );
-    }
 
     // Шаг 1: Генерация качественного промпта через LLM
     let promptGenerationText = '';
@@ -187,27 +170,6 @@ export async function POST(request: NextRequest) {
 
     console.log('Image converted to data URL for permanent storage');
 
-    // Вычитание токенов (промпт генерация + условная стоимость DALL-E)
-    const totalTokens = promptResponse.usage.totalTokens + estimatedTokens;
-    await deductCredits(DEMO_USER_ID, {
-      promptTokens: promptResponse.usage.promptTokens,
-      completionTokens: promptResponse.usage.completionTokens + estimatedTokens,
-      totalTokens,
-    });
-
-    // Логирование
-    await logRequest(
-      DEMO_USER_ID,
-      `image_${type}`,
-      {
-        promptTokens: promptResponse.usage.promptTokens,
-        completionTokens: promptResponse.usage.completionTokens + estimatedTokens,
-        totalTokens,
-      },
-      'dall-e-3',
-      true
-    );
-
     return NextResponse.json({
       success: true,
       imageUrl,
@@ -215,25 +177,9 @@ export async function POST(request: NextRequest) {
       revisedPrompt,
       type,
       size: promptData.size,
-      tokensUsed: totalTokens,
-      creditsRemaining: creditCheck.remaining - totalTokens,
     });
   } catch (error) {
     console.error('Image generation error:', error);
-
-    // Попытка залогировать ошибку
-    try {
-      await logRequest(
-        DEMO_USER_ID,
-        'image_generation',
-        { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-        'dall-e-3',
-        false,
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
-    }
 
     return NextResponse.json(
       {
